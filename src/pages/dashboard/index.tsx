@@ -31,13 +31,19 @@ export default function Dashboard() {
       {/* ===== Main Content ===== */}
       <Layout.Body>
         <div className='mb-2 flex items-center justify-between space-y-2'>
-          <h1 className='text-2xl font-bold tracking-tight'>Glance Dashboard</h1>
+          <h1 className='text-2xl font-bold tracking-tight'>
+            Glance Dashboard
+          </h1>
           <div className='flex items-center space-x-2'>
             <Button>Download Report</Button>
           </div>
         </div>
 
-        <Tabs orientation='vertical' defaultValue='overview' className='space-y-4'>
+        <Tabs
+          orientation='vertical'
+          defaultValue='overview'
+          className='space-y-4'
+        >
           <div className='w-full overflow-x-auto pb-2'>
             <TabsList>
               <TabsTrigger value='overview'>Overview</TabsTrigger>
@@ -119,7 +125,9 @@ export default function Dashboard() {
               <Card className='col-span-1 lg:col-span-3'>
                 <CardHeader>
                   <CardTitle>Recent Activities</CardTitle>
-                  <CardDescription>Latest updates from your team.</CardDescription>
+                  <CardDescription>
+                    Latest updates from your team.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <RecentActivities />
