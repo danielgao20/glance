@@ -53,7 +53,7 @@ export function Overview() {
             fill={COLORS[index]}
             radius={[4, 4, 0, 0]}
           >
-            {data.map((entry, i) => (
+            {data.map((_entry, i) => (
               <Cell
                 key={`cell-${i}`}
                 fillOpacity={0.85}
