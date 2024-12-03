@@ -8,7 +8,7 @@ export default function VisualProgressUpdate({
   screenshot = "/placeholder.svg?height=600&width=800",
 }) {
   return (
-    <div className="border-0 overflow-hidden rounded-lg mx-2 w-96">
+    <div className="border-0 overflow-hidden rounded-lg mx-2 w-fit">
       <div className="p-4 space-y-4">
         {/* User Info and Title */}
         <div className="flex flex-col space-y-2">
@@ -26,12 +26,6 @@ export default function VisualProgressUpdate({
             <div className="flex flex-col">
               <span className="text-md font-medium text-white">{userName}</span>
               <div className="flex items-center gap-2 mt-1">
-                {/* <Badge
-                  variant="secondary"
-                  className="bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
-                >
-                  Progress Update
-                </Badge> */}
                 <div className="bg-emerald-500/10 text-[8px] text-emerald-500 border-2 border-emerald-500 hover:bg-emerald-500/20 rounded-md py-0.75 px-1">
                   Progress Update
                 </div>
