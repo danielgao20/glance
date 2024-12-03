@@ -106,16 +106,16 @@ function App() {
   ];
 
   const HomePage = () => (
-    <div className="flex-1 px-4 overflow-y-scroll">
+    <div className="flex-col flex-1 px-4 overflow-y-scroll ">
       {/* Progress Updates Section */}
-      <div className="container mr-auto">
+      <div className="container mr-auto h-[calc(40%-16px)]">
         <ProgressUpdatesCarousel updates={updates} />
       </div>
 
       {/* Progress Sections Container */}
-      <div className="flex gap-4 mr-4 mt-4 h-[600px]">
+      <div className="flex gap-4 mt-4 h-[calc(52%-16px)]">
         {/* Your Progress */}
-        <div className="flex-1 bg-zinc-900 rounded-lg p-8 overflow-y-scroll h-full">
+        <div className="flex-1 bg-zinc-900 rounded-lg p-8 overflow-y-scroll border-2 border-[#414344] h-full">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-medium">Your Progress</h2>
             <TimeFilterDropdown />
@@ -145,7 +145,7 @@ function App() {
         </div>
 
         {/* Team Progress */}
-        <div className="flex-1 bg-zinc-900 rounded-lg p-8 overflow-y-scroll h-full">
+        <div className="flex-1 bg-zinc-900 rounded-lg p-8 overflow-y-scroll border-2 border-[#414344] h-full">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-medium">Team Progress</h2>
             <TimeFilterDropdown />
@@ -190,9 +190,9 @@ function App() {
 
   return (
     <Router>
-      <div className="bg-black text-white h-screen w-screen fixed overflow-hidden font-inter">
+      <div className="bg-black text-white h-screen w-screen fixed overflow-hidden font-inter flex flex-col">
         {/* TopBar */}
-        <div className="flex items-center space-x-4 mt-4 py-4 mr-8 mb-2">
+        <div className="flex-1 flex items-center space-x-4 mt-4 py-4 mr-8 ">
           {/* Logo */}
           <Link to={"/" || "#"} className="focus:outline-none">
             <div className="flex items-center ml-4 mr-[130px] select-none">
@@ -227,7 +227,7 @@ function App() {
           <ProfilePicture />
         </div>
         {/*main content*/}
-        <div className="flex h-[calc(100vh-80px)]">
+        <div className="flex-1 flex">
           {/* left sidebar */}
           <div className="w-[275px] h-full overflow-y-scroll [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:none]">
             <TeamSelector />
