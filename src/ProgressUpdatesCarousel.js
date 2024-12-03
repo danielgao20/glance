@@ -29,7 +29,7 @@ const ProgressUpdatesScroll = ({ updates }) => {
 
       <div
         ref={scrollContainerRef}
-        className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory"
+        className="flex overflow-x-auto bg-green-300 scrollbar-hide snap-x snap-mandatory"
         style={{ scrollBehavior: "smooth" }}
       >
         {updates.map((update, index) => (

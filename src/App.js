@@ -28,6 +28,7 @@ import ProjectDetails from "./ProjectDetails";
 import StartButton from "./StartButton";
 import TeamSelector from "./TeamSelector";
 import AllDocumentation from "./components/AllDocumentation";
+import NewDocumentation from "./components/NewDocumentation";
 
 function App() {
   const [activeProject] = useState("Blue Hour");
@@ -278,6 +279,7 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/all-documentation" element={<AllDocumentation />} />
+            <Route path="/new-documentation" element={<NewDocumentation />} />
             {/* Add more routes as needed */}
           </Routes>
         </div>
