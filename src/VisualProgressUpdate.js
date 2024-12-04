@@ -29,7 +29,7 @@ export default function VisualProgressUpdate({
                 <div className="bg-emerald-500/10 text-[8px] text-emerald-500 border-2 border-emerald-500 hover:bg-emerald-500/20 rounded-md py-0.75 px-1">
                   Progress Update
                 </div>
-                <span className="text-xs text-white">{title}</span>
+                <span className="text-xs text-white break-words max-w-[12rem]">{title}</span>
               </div>
             </div>
           </div>
@@ -40,7 +40,7 @@ export default function VisualProgressUpdate({
           <img
             src={screenshot}
             alt={`Screenshot for ${title}`}
-            className="w-full h-48 object-cover"
+            className="w-full h-48 object-cover rounded-lg"
           />
         </div>
       </div>
