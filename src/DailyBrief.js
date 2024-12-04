@@ -33,7 +33,7 @@ const DailyBrief = ({}) => {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="flex items-center bg-zinc-900 rounded-lg p-4 hover:bg-zinc-800 transition-colors w-18"
+        className="flex items-center bg-zinc-900 rounded-lg py-4 px-5 hover:bg-zinc-800 transition-colors w-18"
       >
         <img
           src={dailyBriefIcon}
