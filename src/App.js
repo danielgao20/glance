@@ -122,8 +122,16 @@ function App() {
         }
       }
     };
+
+    // Initial load
     loadScreenshots();
-  }, [user]);
+
+    // Set up interval
+    const interval = setInterval(loadScreenshots, 5000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
+  }, [user]); // Include user in dependencies
 
   const HomePage = () => (
     <div className="w-full h-full flex flex-col overflow-hidden">
