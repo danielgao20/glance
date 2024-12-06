@@ -90,6 +90,7 @@ function App() {
               title: screenshot.description,
               screenshot: `http://localhost:5001/api/screenshots/image/${screenshot.fileId}`,
             }))
+            .reverse()
           );
         } catch (error) {
           console.error("Error fetching screenshots:", error);

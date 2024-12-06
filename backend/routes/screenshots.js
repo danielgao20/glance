@@ -107,7 +107,7 @@ router.get('/image/:id', (req, res) => {
 async function generateDescription(extractedText) {
   try {
     const prompt = `
-      Below is text extracted from a screenshot. Analyze it and generate a very concise description based on the content, to explain what is going on in the screenshot. Keep this title 10 words or less:
+      Below is text extracted from a screenshot. Analyze it and generate a very concise description based on the content, to explain what is going on in the screenshot. Keep this title under 10 words and don't put it in quotations or add a title like "description" before it:
 
       Extracted Text:
       ${extractedText}
