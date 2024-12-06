@@ -5,7 +5,7 @@ import { X } from "lucide-react";
 export default function VisualProgressUpdate({
   userName = "Daniel Gao",
   userAvatar = "/placeholder.svg?height=48&width=48",
-  title = "Bugs Resolved",
+  carouselText = "Bugs Resolved",
   screenshot = "/placeholder.svg?height=600&width=800",
 }) {
   const [isImageExpanded, setIsImageExpanded] = useState(false);
@@ -14,7 +14,7 @@ export default function VisualProgressUpdate({
     <>
       <div className="border-0 overflow-hidden rounded-lg mx-2 w-fit">
         <div className="p-4 space-y-4">
-          {/* User Info and Title */}
+          {/* User Info and carouselText */}
           <div className="flex flex-col space-y-2">
             <div className="flex items-center gap-4">
               {/* Profile Section */}
@@ -36,7 +36,7 @@ export default function VisualProgressUpdate({
                     Progress Update
                   </div>
                   <span className="text-xs text-white break-words max-w-[14rem]">
-                    {title}
+                    {carouselText}
                   </span>
                 </div>
               </div>
@@ -50,7 +50,7 @@ export default function VisualProgressUpdate({
           >
             <img
               src={screenshot}
-              alt={`Screenshot for ${title}`}
+              alt={`Screenshot for ${carouselText}`}
               className="w-full h-48 object-cover"
             />
           </div>
@@ -61,7 +61,7 @@ export default function VisualProgressUpdate({
           <div className="space-y-4">
             {/* Header with close button */}
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-white">{title}</h3>
+              <h3 className="text-lg font-semibold text-white">{carouselText}</h3>
               <button
                 onClick={() => setIsImageExpanded(false)}
                 className="p-2 rounded-full hover:bg-zinc-800 transition-colors"
@@ -74,7 +74,7 @@ export default function VisualProgressUpdate({
             <div className="rounded-lg overflow-hidden">
               <img
                 src={screenshot}
-                alt={`Screenshot for ${title}`}
+                alt={`Screenshot for ${carouselText}`}
                 className="w-full h-auto object-contain max-h-[70vh]"
               />
             </div>
