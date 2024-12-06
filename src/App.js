@@ -84,13 +84,14 @@ function App() {
         try {
           const screenshots = await fetchScreenshots();
           setUpdates(
-            screenshots.map((screenshot) => ({
-              userName: screenshot.username,
-              userAvatar: dgaoPfp,
-              title: screenshot.description,
-              screenshot: `http://localhost:5001/api/screenshots/image/${screenshot.fileId}`,
-            }))
-            .reverse()
+            screenshots
+              .map((screenshot) => ({
+                userName: screenshot.username,
+                userAvatar: dgaoPfp,
+                title: screenshot.description,
+                screenshot: `http://localhost:5001/api/screenshots/image/${screenshot.fileId}`,
+              }))
+              .reverse()
           );
         } catch (error) {
           console.error("Error fetching screenshots:", error);
@@ -160,7 +161,7 @@ function App() {
           {/* Left Nav */}
           <div className="flex flex-col flex-shrink-0">
             <Link to="/" className="focus:outline-none h-20">
-              <div className="flex items-center ml-6 mr-[130px] select-none">
+              <div className="flex items-center ml-6 mt-2 mr-[130px] select-none">
                 <img src={glanceLogo} className="h-9 w-7 mr-3" alt="Logo" />
                 <h1 className="font-custom text-3xl">glance</h1>
               </div>
