@@ -1,45 +1,52 @@
+"use client";
+
 import React, { useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
 
-const TimeFilterDropdown = () => {
-  const [isOpen, setIsOpen] = useState(false);
+export default function TimeFilterDropdown() {
   const [selected, setSelected] = useState("This Week");
 
   const options = ["Today", "This Week", "This Month"];
 
-  return (
-    <div className="relative">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-1.5 bg-zinc-800/80 rounded-lg text-sm hover:bg-zinc-700/80 transition-colors"
-      >
-        {selected}
-        <ChevronDown
-          className={`w-4 h-4 transition-transform ${
-            isOpen ? "rotate-180" : ""
-          }`}
-        />
-      </button>
+  const handleTimeChange = (option) => {
+    setSelected(option);
+  };
 
-      {isOpen && (
-        <div className="absolute top-full mt-1 w-full bg-zinc-800 rounded-lg shadow-lg overflow-hidden">
-          {options.map((option) => (
-            <button
-              key={option}
-              onClick={() => {
-                setSelected(option);
-                setIsOpen(false);
-              }}
-              className={`w-full px-3 py-1.5 text-left text-sm hover:bg-zinc-700 transition-colors
-                ${option === selected ? "bg-zinc-700" : ""}`}
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          className="flex items-center gap-2 px-3 py-1.5 border-2 border-[#414344] bg-zinc-800/80 rounded-lg text-sm hover:bg-zinc-700/80 transition-colors duration-200 focus:outline-none"
+          aria-label="Select time range"
+        >
+          {selected}
+          <ChevronDown className="w-4 h-4" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        className="w-32 bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg"
+        align="start"
+      >
+        {options.map((option) => (
+          <DropdownMenuItem
+            key={option}
+            className="px-3 py-1.5 hover:bg-zinc-700 focus:bg-zinc-700 cursor-pointer transition-colors duration-150"
+            onClick={() => handleTimeChange(option)}
+          >
+            <span
+              className={`text-sm ${option === selected ? "font-medium" : ""}`}
             >
               {option}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+            </span>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
-};
-
-export default TimeFilterDropdown;
+}

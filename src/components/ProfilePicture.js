@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,9 +14,18 @@ import {
   User,
   Settings as SettingsIcon,
 } from "lucide-react";
-import pfpIcon from "./img/pfpIcon.svg";
+import pfpIcon from "../img/pfpIcon.svg";
+import AuthContext from "../context/AuthContext";
 
 const ProfilePicture = () => {
+  const { logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   const options = [
     { label: "Status", icon: <Circle className="w-4 h-4 text-green-500" /> },
     { label: "Free Plan", icon: <CreditCard className="w-4 h-4" /> },
@@ -45,6 +55,13 @@ const ProfilePicture = () => {
             </div>
           </DropdownMenuItem>
         ))}
+        {/* Log Out Option */}
+        <DropdownMenuItem
+          onClick={handleLogout}
+          className="px-3 py-3 text-sm text-red-500 hover:bg-red-700/20 transition-colors cursor-pointer"
+        >
+          <span>Log Out</span>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

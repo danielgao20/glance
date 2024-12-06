@@ -7,8 +7,10 @@ let mainWindow;
 
 app.whenReady().then(() => {
   mainWindow = new BrowserWindow({
-    width: 1000,
-    height: 800,
+    width: 1920,
+    height: 1080,
+    minHeight: 570,
+    minWidth: 1250,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,

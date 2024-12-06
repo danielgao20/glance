@@ -6,7 +6,7 @@ import glanceLogo from "./img/Subtract.svg";
 import newDocLogo from "./img/newDocLogo.svg";
 import allDoc from "./img/folder.svg";
 import searchIcon from "./img/searchIcon.svg";
-import dgaoPfp from "./img/dgaoPfp.svg"; // Default avatar
+import dgaoPfp from "./img/dgaoPfp.svg";
 import ProgressUpdatesCarousel from "./ProgressUpdatesCarousel";
 import TimeFilterDropdown from "./TimeFilterDropdown";
 import DailyBrief from "./DailyBrief";
@@ -17,31 +17,86 @@ import AllDocumentation from "./components/AllDocumentation";
 import NewDocumentation from "./components/NewDocumentation";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import AuthContext from "./context/AuthContext"; // Import AuthContext
-import { fetchScreenshots } from "./api"; // Fetch screenshots from backend
+import AuthContext from "./context/AuthContext";
+import { fetchScreenshots } from "./api";
+import ellipse1 from "./img/ellipse1.svg";
+import ellipse2 from "./img/ellipse2.svg";
+import ellipse3 from "./img/ellipse3.svg";
+import ellipse4 from "./img/ellipse4.svg";
+import ellipse5 from "./img/ellipse5.svg";
+import ellipse6 from "./img/ellipse6.svg";
+import ProfilePicture from "./components/ProfilePicture";
 
 function App() {
-  const { user, logout } = useContext(AuthContext); // Access AuthContext
+  const { user, logout } = useContext(AuthContext);
   const [updates, setUpdates] = useState([]);
 
-  // Fetch screenshots on mount
+  const navItems = [
+    {
+      title: "New Documentation",
+      icon: <img src={newDocLogo} alt="plus" />,
+      path: "/new-documentation",
+    },
+    {
+      title: "All Documentation",
+      icon: <img src={allDoc} alt="folder" />,
+      path: "/all-documentation",
+    },
+    {
+      title: "Team Progress",
+      icon: <img src={ellipse1} alt="folder" />,
+      subitems: [
+        "Compilation of Issues",
+        "Timeline & Milestones",
+        "Game Design Document",
+      ],
+    },
+    {
+      title: "3D Models",
+      icon: <img src={ellipse2} alt="folder" />,
+      subitems: ["Character Iterations", "Weapon Models", "Rigged Assets"],
+    },
+    {
+      title: "Development",
+      icon: <img src={ellipse3} alt="folder" />,
+      subitems: ["Bugs", "Tech Stack", "Specification & Features"],
+    },
+    {
+      title: "Marketing",
+      icon: <img src={ellipse4} alt="folder" />,
+      subitems: ["Successful Campaigns", "Resources"],
+    },
+    {
+      title: "UI & UX",
+      icon: <img src={ellipse5} alt="folder" />,
+      subitems: ["Interface Iterations", "Final User Flow"],
+    },
+    {
+      title: "Concept Art",
+      icon: <img src={ellipse6} alt="folder" />,
+      subitems: ["Character Art", "World Building", "Emote Templates"],
+    },
+  ];
+
   useEffect(() => {
     const loadScreenshots = async () => {
-      try {
-        const screenshots = await fetchScreenshots();
-        setUpdates(
-          screenshots.map((screenshot) => ({
-            userName: screenshot.username,
-            userAvatar: dgaoPfp, // Temp avatar
-            title: screenshot.description,
-            screenshot: `http://localhost:5001/api/screenshots/image/${screenshot.fileId}`,
-          }))
-        );
-      } catch (error) {
-        console.error("Error fetching screenshots:", error);
+      if (user) {
+        try {
+          const screenshots = await fetchScreenshots();
+          setUpdates(
+            screenshots.map((screenshot) => ({
+              userName: screenshot.username,
+              userAvatar: dgaoPfp,
+              title: screenshot.description,
+              screenshot: `http://localhost:5001/api/screenshots/image/${screenshot.fileId}`,
+            }))
+          );
+        } catch (error) {
+          console.error("Error fetching screenshots:", error);
+        }
       }
     };
-    if (user) loadScreenshots();
+    loadScreenshots();
   }, [user]);
 
   const HomePage = () => (
@@ -63,7 +118,7 @@ function App() {
                 {updates.map((update, index) => (
                   <ProgressItem
                     key={index}
-                    date={new Date().toLocaleDateString()} // Replace with real date if available
+                    date={new Date().toLocaleDateString()}
                     description={update.title}
                   />
                 ))}
@@ -83,10 +138,8 @@ function App() {
               <div className="flex flex-col gap-4">
                 <p className="leading-7 text-base text-zinc-300">
                   This week's focus was on{" "}
-                  <span className="font-bold">
-                    refining the core visual and gameplay elements
-                  </span>{" "}
-                  essential for the game's development.
+                  <span className="font-bold">key gameplay elements</span> to
+                  enhance the project.
                 </p>
               </div>
             </div>
@@ -98,33 +151,62 @@ function App() {
 
   return (
     <Router>
-      {user ? (
+      {user ? ( // Conditionally render based on user authentication
         <div className="flex gap-4 bg-black text-white h-screen w-screen overflow-hidden font-inter p-4">
           {/* Left Nav */}
           <div className="flex flex-col">
             <Link to="/" className="focus:outline-none h-20">
-              <div className="flex items-center ml-4 mr-[130px] select-none">
+              <div className="flex items-center ml-6 mr-[130px] select-none">
                 <img src={glanceLogo} className="h-9 w-7 mr-3" alt="Logo" />
                 <h1 className="font-custom text-3xl">glance</h1>
               </div>
             </Link>
-
+  
             <TeamSelector />
-
+  
             {/* Navigation Items */}
-            <nav className="space-y-1">
+            <nav className="space-y-1 h-[calc(100vh-200px)] overflow-y-auto scrollbar-hide">
               <div className="h-[1px] bg-[#1e1e1e] my-2"></div>
-              <div className="flex items-center p-4">
-                <button
-                  className="bg-red-600 text-white px-4 py-2 rounded"
-                  onClick={logout}
-                >
-                  Logout
-                </button>
-              </div>
+              {navItems.map((item, index) => (
+                <div key={item.title} className="space-y-1">
+                  {item.subitems ? (
+                    <Collapsible.Root className="w-full">
+                      <Collapsible.Trigger className="w-full flex items-center justify-between py-2 pr-2 pl-6 rounded-lg hover:bg-zinc-800 group">
+                        <div className="flex items-center space-x-3">
+                          <span className="w-5">{item.icon}</span>
+                          <span className="text-sm">{item.title}</span>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-zinc-400 transition-transform duration-200 ease-in-out group-data-[state=open]:hidden" />
+                        <ChevronDown className="w-4 h-4 text-zinc-400 transition-transform duration-200 ease-in-out hidden group-data-[state=open]:block" />
+                      </Collapsible.Trigger>
+                      <Collapsible.Content>
+                        {item.subitems.map((subitem) => (
+                          <button
+                            key={subitem}
+                            className="w-full flex items-center space-x-3 p-2 pl-10 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-white"
+                          >
+                            <span className="text-sm">{subitem}</span>
+                          </button>
+                        ))}
+                      </Collapsible.Content>
+                    </Collapsible.Root>
+                  ) : (
+                    <Link
+                      to={item.path || "#"}
+                      className="w-full flex items-center space-x-3 py-2 pr-2 pl-6 rounded-lg hover:bg-zinc-800"
+                    >
+                      <span className="w-5">{item.icon}</span>
+                      <span className="text-sm">{item.title}</span>
+                    </Link>
+                  )}
+                  {index === 1 && (
+                    <div className="h-[1px] bg-[#1e1e1e] my-2"></div>
+                  )}
+                </div>
+              ))}
             </nav>
           </div>
-
+  
           {/* Right Side */}
           <div className="flex-1 flex flex-col h-full w-full">
             <div className="flex gap-4 h-14 mb-6">
@@ -138,30 +220,33 @@ function App() {
                 <input
                   type="text"
                   placeholder="Search in Project"
-                  className="bg-zinc-900 rounded-lg h-full w-full pl-10 pr-4 py-4 w-[650px] text-sm focus:outline-none focus:ring-2 focus:ring-white"
+                  className="bg-zinc-900 rounded-lg h-full w-full pl-10 pr-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-white"
                 />
               </div>
               <ProjectDetails />
               <StartButton />
+              <ProfilePicture />
             </div>
             <div className="flex-1 overflow-hidden">
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/all-documentation" element={<AllDocumentation />} />
                 <Route path="/new-documentation" element={<NewDocumentation />} />
+                <Route path="*" element={<HomePage />} />
               </Routes>
             </div>
           </div>
         </div>
       ) : (
+        // Render login/register when no user is authenticated
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="*" element={<Login />} />
+          <Route path="*" element={<Login />} /> {/* Redirect to login */}
         </Routes>
       )}
     </Router>
-  );
+  );  
 }
 
 function ProgressItem({ date, description }) {
