@@ -20,7 +20,17 @@ const StartButton = ({ onSessionEnd }) => {
         window.electronAPI.onMessage("screenshot-error", reject);
       });
 
-      await sendScreenshot(username, screenshotPath);
+      // Add default text for carousel and progress
+      const timestamp = new Date().toLocaleTimeString();
+      const carouselText = `Progress Update at ${timestamp}`;
+      const progressText = `Captured screenshot of current work in progress at ${timestamp}`;
+
+      await sendScreenshot(
+        username,
+        screenshotPath,
+        carouselText,
+        progressText
+      );
       console.log("Screenshot saved successfully");
     } catch (error) {
       console.error("Error capturing screenshot:", error.message);

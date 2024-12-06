@@ -41,7 +41,8 @@ function App() {
             .map((screenshot) => ({
               userName: screenshot.username,
               userAvatar: dgaoPfp,
-              title: screenshot.description,
+              carouselText: screenshot.carouselText,
+              progressText: screenshot.progressText,
               screenshot: `http://localhost:5001/api/screenshots/image/${screenshot.fileId}`,
             }))
             .reverse()
@@ -123,15 +124,11 @@ function App() {
     loadScreenshots();
   }, [user]);
 
-  const filteredUpdates = updates.filter((update) =>
-    update.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   const HomePage = () => (
     <div className="w-full h-full flex flex-col overflow-hidden">
       {/* Carousel section */}
       <div className="flex-[2_2_0%] max-w-full overflow-hidden">
-        <ProgressUpdatesCarousel updates={filteredUpdates} />
+        <ProgressUpdatesCarousel updates={updates} />
       </div>
       <div className="mt-2 flex-[2.6_2.6_0%] flex gap-4 min-h-0">
         <div className="flex-1 min-w-0">
@@ -144,7 +141,7 @@ function App() {
             </div>
             <div className="flex-1 scrollbar-hide overflow-y-auto overflow-x-hidden p-8 pt-2">
               <div className="flex flex-col gap-6">
-                {filteredUpdates.map((update, index) => (
+                {updates.map((update, index) => (
                   <ProgressItem
                     key={index}
                     date={new Date().toLocaleDateString()}
