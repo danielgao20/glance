@@ -1,6 +1,7 @@
 ### backend
 ```
-npm i
+cd backend
+npm i --legacy-peer-deps
 node app.js
 ```
 
