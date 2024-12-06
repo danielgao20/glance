@@ -22,6 +22,93 @@ if (!mongoURI || !openaiAPIKey) {
   process.exit(1);
 }
 
+// Add to your existing screenshots.js router
+router.post("/generate-summary", async (req, res) => {
+  try {
+    const { progressUpdates } = req.body;
+
+    const prompt = `
+      Given the progress updates from different team members,
+
+      Provide me a summary of the team progress in the following JSON structure:
+      [
+        {
+          "text": <PART OF PARAGRAPH THAT IS A GENERAL SENTENCE>,
+          "username": "GENERAL"
+        },
+        {
+          "text": <PART OF PARAGRAPH THAT IS A  SENTENCE ABOUT username's CONTRIBUTION>,
+          "username": <USERNAME OF WHO CONTRIBUTED>
+        },
+        {
+          "text": <PART OF PARAGRAPH THAT IS A  SENTENCE ABOUT username's CONTRIBUTION>,
+          "username": <USERNAME OF WHO CONTRIBUTED>
+        }
+      ]
+
+      <SAMPLE INPUT>
+      Sample Input:
+      David: working on stripe dashboard and creating a new item
+      David: integrating the stripe payment wall into the application on VScode
+      David: Paying for an item in a stripe payment user interface
+
+      Alice: Working on figma prototyping landing page design
+      Alice: Creating the new logo for the landing page
+      Alice: Creating new frames for the different sub pages for the landing pages
+
+
+      Sample Output:
+      [
+        {
+          "text": "Throughout the day, the team worked on the application, especially in the payments integration and new design for the landing page.",
+          "username": "GENERAL"
+        },
+        {
+          "text": "David worked on integrating the payment gateway into the website. He added a new page for the payment form and updated the backend to handle payment processing.",
+          "username": "David"
+        },
+        {
+          "text": "Alice completed the design for the landing page. She created a hero section with a call-to-action button and added testimonials from customers.",
+          "username": "Alice"
+        }
+      ] 
+      </SAMPLE INPUT>
+    `;
+
+    const input = progressUpdates
+      .map((update) => `${update.userName}: ${update.progressText}`)
+      .join("\n");
+    console.log(input);
+    const response = await axios.post(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        model: "gpt-4-turbo",
+        messages: [
+          { role: "system", content: prompt },
+          {
+            role: "user",
+            content: `Progress of the team: ${input}`,
+          },
+        ],
+        max_tokens: 500,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${openaiAPIKey}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const summary = response.data.choices[0].message.content.trim();
+    console.log(summary);
+    res.json({ summary });
+  } catch (error) {
+    console.error("Error generating summary:", error);
+    res.status(500).json({ error: "Failed to generate summary" });
+  }
+});
+
 // POST route for saving screenshots
 router.post("/", upload.single("screenshot"), async (req, res) => {
   try {

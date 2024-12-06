@@ -26,6 +26,7 @@ import ellipse4 from "./img/ellipse4.svg";
 import ellipse5 from "./img/ellipse5.svg";
 import ellipse6 from "./img/ellipse6.svg";
 import ProfilePicture from "./components/ProfilePicture";
+import TeamProgress from "./TeamProgress";
 
 function App() {
   const { user, logout } = useContext(AuthContext);
@@ -154,24 +155,7 @@ function App() {
         </div>
         <div className="flex-1 min-w-0">
           {/* Set height to 100% instead of 50vh */}
-          <div className="w-full h-full flex flex-col bg-zinc-900 rounded-lg border-2 border-[#414344] overflow-hidden">
-            <div className="p-8 pb-4 flex-shrink-0">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-medium">Team Progress</h2>
-                <TimeFilterDropdown />
-              </div>
-            </div>
-            {/* Keep the scroll functionality */}
-            <div className="flex-1 scrollbar-hide overflow-y-auto overflow-x-hidden p-8 pt-2">
-              <div className="flex flex-col gap-4">
-                <p className="leading-7 text-base text-zinc-300">
-                  This week's focus was on{" "}
-                  <span className="font-bold">key gameplay elements</span> to
-                  enhance the project.
-                </p>
-              </div>
-            </div>
-          </div>
+          <TeamProgress updates={updates} />
         </div>
       </div>
     </div>
