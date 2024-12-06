@@ -100,20 +100,20 @@ function App() {
   }, [user]);
 
   const HomePage = () => (
-    <div className="w-full h-full flex flex-col">
-      <div className="flex-1 max-w-full">
+    <div className="w-full h-full flex flex-col overflow-hidden">
+      <div className="flex-1 max-w-full overflow-hidden">
         <ProgressUpdatesCarousel updates={updates} />
       </div>
-      <div className="mt-4 flex-[3_3_0%] flex gap-4">
-        <div className="flex-1 h-full">
-          <div className="w-full h-full overflow-y-scroll bg-zinc-900 rounded-lg border-2 border-[#414344]">
-            <div className="p-8 pb-4">
+      <div className="mt-4 flex-[3_3_0%] flex gap-4 min-h-0">
+        <div className="flex-1 h-full min-w-0">
+          <div className="w-full h-[calc(50vh)] flex flex-col bg-zinc-900 rounded-lg border-2 border-[#414344] overflow-hidden">
+            <div className="p-8 pb-4 flex-shrink-0">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-medium">Your Progress</h2>
                 <TimeFilterDropdown />
               </div>
             </div>
-            <div className="min-h-0 p-8 pt-2">
+            <div className="flex-1 scrollbar-hide overflow-y-auto overflow-x-hidden p-8 pt-2">
               <div className="flex flex-col gap-6">
                 {updates.map((update, index) => (
                   <ProgressItem
@@ -126,15 +126,15 @@ function App() {
             </div>
           </div>
         </div>
-        <div className="flex-1">
-          <div className="w-full h-full overflow-y-auto bg-zinc-900 rounded-lg border-2 border-[#414344]">
-            <div className="p-8 pb-4">
+        <div className="flex-1 min-w-0">
+          <div className="w-full h-[calc(50vh)] flex flex-col bg-zinc-900 rounded-lg border-2 border-[#414344] overflow-hidden">
+            <div className="p-8 pb-4 flex-shrink-0">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-medium">Team Progress</h2>
                 <TimeFilterDropdown />
               </div>
             </div>
-            <div className="min-h-0 p-8 pt-2">
+            <div className="flex-1 scrollbar-hide overflow-y-auto overflow-x-hidden p-8 pt-2">
               <div className="flex flex-col gap-4">
                 <p className="leading-7 text-base text-zinc-300">
                   This week's focus was on{" "}
@@ -154,16 +154,16 @@ function App() {
       {user ? ( // Conditionally render based on user authentication
         <div className="flex gap-4 bg-black text-white h-screen w-screen overflow-hidden font-inter p-4">
           {/* Left Nav */}
-          <div className="flex flex-col">
+          <div className="flex flex-col flex-shrink-0">
             <Link to="/" className="focus:outline-none h-20">
               <div className="flex items-center ml-6 mr-[130px] select-none">
                 <img src={glanceLogo} className="h-9 w-7 mr-3" alt="Logo" />
                 <h1 className="font-custom text-3xl">glance</h1>
               </div>
             </Link>
-  
+
             <TeamSelector />
-  
+
             {/* Navigation Items */}
             <nav className="space-y-1 h-[calc(100vh-200px)] overflow-y-auto scrollbar-hide">
               <div className="h-[1px] bg-[#1e1e1e] my-2"></div>
@@ -206,12 +206,12 @@ function App() {
               ))}
             </nav>
           </div>
-  
+
           {/* Right Side */}
-          <div className="flex-1 flex flex-col h-full w-full">
-            <div className="flex gap-4 h-14 mb-6">
-              <DailyBrief />
-              <div className="relative h-full flex-1">
+          <div className="flex-1 flex flex-col h-full min-w-0">
+            <div className="flex gap-4 h-14 mb-6 flex-shrink-0">
+              <DailyBrief className="flex-shrink-0" />
+              <div className="relative h-full flex-1 min-w-0">
                 <img
                   src={searchIcon}
                   className="absolute left-3 top-4 h-[22px] w-[22px]"
@@ -223,15 +223,21 @@ function App() {
                   className="bg-zinc-900 rounded-lg h-full w-full pl-10 pr-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-white"
                 />
               </div>
-              <ProjectDetails />
-              <StartButton />
-              <ProfilePicture />
+              <ProjectDetails className="flex-shrink-0" />
+              <StartButton className="flex-shrink-0" />
+              <ProfilePicture className="flex-shrink-0" />
             </div>
             <div className="flex-1 overflow-hidden">
               <Routes>
                 <Route path="/" element={<HomePage />} />
-                <Route path="/all-documentation" element={<AllDocumentation />} />
-                <Route path="/new-documentation" element={<NewDocumentation />} />
+                <Route
+                  path="/all-documentation"
+                  element={<AllDocumentation />}
+                />
+                <Route
+                  path="/new-documentation"
+                  element={<NewDocumentation />}
+                />
                 <Route path="*" element={<HomePage />} />
               </Routes>
             </div>
@@ -246,7 +252,7 @@ function App() {
         </Routes>
       )}
     </Router>
-  );  
+  );
 }
 
 function ProgressItem({ date, description }) {
