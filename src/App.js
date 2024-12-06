@@ -102,12 +102,13 @@ function App() {
 
   const HomePage = () => (
     <div className="w-full h-full flex flex-col overflow-hidden">
-      <div className="flex-1 max-w-full overflow-hidden">
+      {/* Carousel section */}
+      <div className="flex-[2_2_0%] max-w-full overflow-hidden">
         <ProgressUpdatesCarousel updates={updates} />
       </div>
-      <div className="mt-4 flex-[3_3_0%] flex gap-4 min-h-0">
-        <div className="flex-1 h-full min-w-0">
-          <div className="w-full h-[calc(50vh)] flex flex-col bg-zinc-900 rounded-lg border-2 border-[#414344] overflow-hidden">
+      <div className="mt-2 flex-[2.6_2.6_0%] flex gap-4 min-h-0">
+        <div className="flex-1 min-w-0">
+          <div className="w-full h-full flex flex-col bg-zinc-900 rounded-lg border-2 border-[#414344] overflow-hidden">
             <div className="p-8 pb-4 flex-shrink-0">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-medium">Your Progress</h2>
@@ -128,13 +129,15 @@ function App() {
           </div>
         </div>
         <div className="flex-1 min-w-0">
-          <div className="w-full h-[calc(50vh)] flex flex-col bg-zinc-900 rounded-lg border-2 border-[#414344] overflow-hidden">
+          {/* Set height to 100% instead of 50vh */}
+          <div className="w-full h-full flex flex-col bg-zinc-900 rounded-lg border-2 border-[#414344] overflow-hidden">
             <div className="p-8 pb-4 flex-shrink-0">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-medium">Team Progress</h2>
                 <TimeFilterDropdown />
               </div>
             </div>
+            {/* Keep the scroll functionality */}
             <div className="flex-1 scrollbar-hide overflow-y-auto overflow-x-hidden p-8 pt-2">
               <div className="flex flex-col gap-4">
                 <p className="leading-7 text-base text-zinc-300">
