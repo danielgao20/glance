@@ -45,8 +45,18 @@ router.post("/", upload.single("screenshot"), async (req, res) => {
     // Generate description using OpenAI API
     const description = await generateDescription(extractedText);
 
+    // description is a json object with carouselText and progressText
+    // parse the description and print the carouselText and progressText
+    const descriptionObj = JSON.parse(description);
+    console.log('Carousel Text:', descriptionObj.carouselText);
+    console.log('Progress Text:', descriptionObj.progressText);
+
     const uploadStream = gfs.openUploadStream(filename, {
-      metadata: { username: req.body.username, description }, // Include description in metadata
+      metadata: { 
+        username: req.body.username, 
+        carouselText: descriptionObj.carouselText,
+        progressText: descriptionObj.progressText,
+      }, // Include carousel and progress text in metadata
     });
 
     // Pipe the file to GridFS
@@ -59,18 +69,19 @@ router.post("/", upload.single("screenshot"), async (req, res) => {
       .on("finish", () => {
         console.log("File uploaded successfully:", uploadStream.id);
 
-        // Clean up temporary file
-        fs.unlinkSync(filePath);
-
         res.status(201).json({
           username: req.body.username,
           fileId: uploadStream.id,
-          description,
+          carouselText: descriptionObj.carouselText,
+          progressText: descriptionObj.progressText,
         });
       });
   } catch (error) {
-    console.error("Unexpected error:", error.message);
-    res.status(500).json({ error: "Internal server error" });
+    console.error('Unexpected error:', error.message);
+    res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    // Clean up temporary file
+    fs.unlinkSync(filePath);
   }
 });
 
@@ -81,13 +92,12 @@ router.get("/", async (req, res) => {
     const gfs = new GridFSBucket(conn.db, { bucketName: "screenshots" });
 
     const files = await gfs.find().toArray();
-    res.status(200).json(
-      files.map((file) => ({
-        username: file.metadata?.username || "Unknown",
-        description: file.metadata?.description || "No description available",
-        fileId: file._id,
-      }))
-    );
+    res.status(200).json(files.map((file) => ({
+      username: file.metadata?.username || 'Unknown',
+      carouselText: file.metadata?.carouselText || 'No description available',
+      progressText: file.metadata?.progressText || 'No description available',
+      fileId: file._id,
+    })));
   } catch (error) {
     console.error("Error fetching screenshots:", error.message);
     res.status(500).json({ error: error.message });
@@ -114,10 +124,12 @@ router.get("/image/:id", (req, res) => {
 async function generateDescription(extractedText) {
   try {
     const prompt = `
-      Below is text extracted from a screenshot. Analyze it and generate a very concise description based on the content, to explain what is going on in the screenshot. Keep this title under 10 words and don't put it in quotations or add a title like "description" before it or include the word screenshot in it:
-
-      Extracted Text:
-      ${extractedText}
+      Provided an extracted texts from a screenshot, analyze it and generate a JSON object with the following format about the content:
+      {
+        "carouselText": <LESS THAN 5 WORD SUMMARY OF THE SCREENSHOT>,
+        "progressText": <MORE THAN 10 WORD, LESS THAN 20 WORD SUMMARY OF THE SCREENSHOT>
+      }
+      In the content, please try to avoid using the words "screenshot", "image", or quotation marks.
     `;
 
     const response = await axios.post(
@@ -125,8 +137,8 @@ async function generateDescription(extractedText) {
       {
         model: "gpt-4-turbo",
         messages: [
-          { role: "system", content: "Generate concise descriptions." },
-          { role: "user", content: prompt },
+          { role: 'system', content: prompt },
+          { role: 'user', content: extractedText},
         ],
         max_tokens: 100,
       },

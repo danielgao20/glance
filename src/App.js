@@ -109,7 +109,8 @@ function App() {
               .map((screenshot) => ({
                 userName: screenshot.username,
                 userAvatar: dgaoPfp,
-                title: screenshot.description,
+                carouselText: screenshot.carouselText,
+                progressText: screenshot.progressText,
                 screenshot: `http://localhost:5001/api/screenshots/image/${screenshot.fileId}`,
               }))
               .reverse()
@@ -147,7 +148,7 @@ function App() {
                   <ProgressItem
                     key={index}
                     date={new Date().toLocaleDateString()}
-                    description={update.title}
+                    description={update.progressText}
                   />
                 ))}
               </div>
