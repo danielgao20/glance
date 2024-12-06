@@ -30,6 +30,27 @@ import ProfilePicture from "./components/ProfilePicture";
 function App() {
   const { user, logout } = useContext(AuthContext);
   const [updates, setUpdates] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const refreshScreenshots = async () => {
+    if (user) {
+      try {
+        const screenshots = await fetchScreenshots();
+        setUpdates(
+          screenshots
+            .map((screenshot) => ({
+              userName: screenshot.username,
+              userAvatar: dgaoPfp,
+              title: screenshot.description,
+              screenshot: `http://localhost:5001/api/screenshots/image/${screenshot.fileId}`,
+            }))
+            .reverse()
+        );
+      } catch (error) {
+        console.error("Error fetching screenshots:", error);
+      }
+    }
+  };
 
   const navItems = [
     {
@@ -102,11 +123,15 @@ function App() {
     loadScreenshots();
   }, [user]);
 
+  const filteredUpdates = updates.filter((update) =>
+    update.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const HomePage = () => (
     <div className="w-full h-full flex flex-col overflow-hidden">
       {/* Carousel section */}
       <div className="flex-[2_2_0%] max-w-full overflow-hidden">
-        <ProgressUpdatesCarousel updates={updates} />
+        <ProgressUpdatesCarousel updates={filteredUpdates} />
       </div>
       <div className="mt-2 flex-[2.6_2.6_0%] flex gap-4 min-h-0">
         <div className="flex-1 min-w-0">
@@ -119,7 +144,7 @@ function App() {
             </div>
             <div className="flex-1 scrollbar-hide overflow-y-auto overflow-x-hidden p-8 pt-2">
               <div className="flex flex-col gap-6">
-                {updates.map((update, index) => (
+                {filteredUpdates.map((update, index) => (
                   <ProgressItem
                     key={index}
                     date={new Date().toLocaleDateString()}
@@ -227,10 +252,15 @@ function App() {
                   type="text"
                   placeholder="Search in Project"
                   className="bg-zinc-900 rounded-lg h-full w-full pl-10 pr-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-white"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
               <ProjectDetails className="flex-shrink-0" />
-              <StartButton className="flex-shrink-0" />
+              <StartButton
+                className="flex-shrink-0"
+                onSessionEnd={refreshScreenshots}
+              />
               <ProfilePicture className="flex-shrink-0" />
             </div>
             <div className="flex-1 overflow-hidden">

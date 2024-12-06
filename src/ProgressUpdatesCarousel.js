@@ -30,7 +30,7 @@ const ProgressUpdatesScroll = ({ updates }) => {
       <div className="relative">
         <div
           ref={scrollContainerRef}
-          className="flex w-full overflow-x-auto rounded-lg bg-zinc-900 pr-4 border-2 border-[#414344] scrollbar-hide snap-x snap-mandatory"
+          className="flex w-full min-h-[300px] overflow-x-auto rounded-lg bg-zinc-900 pr-4 border-2 border-[#414344] scrollbar-hide snap-x snap-mandatory"
           style={{ scrollBehavior: "smooth" }}
         >
           {updates.map((update, index) => (
