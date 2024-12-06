@@ -48,12 +48,12 @@ router.post("/", upload.single("screenshot"), async (req, res) => {
     // description is a json object with carouselText and progressText
     // parse the description and print the carouselText and progressText
     const descriptionObj = JSON.parse(description);
-    console.log('Carousel Text:', descriptionObj.carouselText);
-    console.log('Progress Text:', descriptionObj.progressText);
+    console.log("Carousel Text:", descriptionObj.carouselText);
+    console.log("Progress Text:", descriptionObj.progressText);
 
     const uploadStream = gfs.openUploadStream(filename, {
-      metadata: { 
-        username: req.body.username, 
+      metadata: {
+        username: req.body.username,
         carouselText: descriptionObj.carouselText,
         progressText: descriptionObj.progressText,
       }, // Include carousel and progress text in metadata
@@ -68,6 +68,7 @@ router.post("/", upload.single("screenshot"), async (req, res) => {
       })
       .on("finish", () => {
         console.log("File uploaded successfully:", uploadStream.id);
+        fs.unlinkSync(filePath);
 
         res.status(201).json({
           username: req.body.username,
@@ -77,11 +78,8 @@ router.post("/", upload.single("screenshot"), async (req, res) => {
         });
       });
   } catch (error) {
-    console.error('Unexpected error:', error.message);
-    res.status(500).json({ error: 'Internal server error' });
-  } finally {
-    // Clean up temporary file
-    fs.unlinkSync(filePath);
+    console.error("Unexpected error:", error.message);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -92,12 +90,14 @@ router.get("/", async (req, res) => {
     const gfs = new GridFSBucket(conn.db, { bucketName: "screenshots" });
 
     const files = await gfs.find().toArray();
-    res.status(200).json(files.map((file) => ({
-      username: file.metadata?.username || 'Unknown',
-      carouselText: file.metadata?.carouselText || 'No description available',
-      progressText: file.metadata?.progressText || 'No description available',
-      fileId: file._id,
-    })));
+    res.status(200).json(
+      files.map((file) => ({
+        username: file.metadata?.username || "Unknown",
+        carouselText: file.metadata?.carouselText || "No description available",
+        progressText: file.metadata?.progressText || "No description available",
+        fileId: file._id,
+      }))
+    );
   } catch (error) {
     console.error("Error fetching screenshots:", error.message);
     res.status(500).json({ error: error.message });
@@ -137,8 +137,8 @@ async function generateDescription(extractedText) {
       {
         model: "gpt-4-turbo",
         messages: [
-          { role: 'system', content: prompt },
-          { role: 'user', content: extractedText},
+          { role: "system", content: prompt },
+          { role: "user", content: extractedText },
         ],
         max_tokens: 100,
       },
