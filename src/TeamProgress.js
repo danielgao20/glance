@@ -3,10 +3,10 @@ import TimeFilterDropdown from "./TimeFilterDropdown";
 
 const colorMapping = {
   GENERAL: "bg-transparent",
-  daniel: "bg-blue-500/30",
-  josephine: "bg-yellow-500/30",
-  david: "bg-purple-500/30",
-  jon: "bg-emerald-500/30",
+  David: "bg-blue-500/30",
+  Jon: "bg-yellow-500/30",
+  Josephine: "bg-purple-500/30",
+  Daniel: "bg-emerald-500/30",
 };
 
 const TeamProgress = ({ updates }) => {
