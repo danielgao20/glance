@@ -10,3 +10,9 @@ node app.js
 npm i
 npm run electron-dev
 ```
+
+### branches
+```
+git checkout -b feature/new-branch
+git push -u origin feature/new-branch
+```
