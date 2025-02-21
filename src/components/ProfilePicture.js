@@ -32,7 +32,6 @@ const ProfilePicture = () => {
     { label: "Personal Info", icon: <User className="w-4 h-4" /> },
     { label: "Settings", icon: <SettingsIcon className="w-4 h-4" /> },
   ];
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
