@@ -29,9 +29,9 @@ const ProfilePicture = () => {
   const options = [
     { label: "Status", icon: <Circle className="w-4 h-4 text-green-500" /> },
     { label: "Free Plan", icon: <CreditCard className="w-4 h-4" /> },
-    { label: "Personal Info", icon: <User className="w-4 h-4" /> },
+    { label: "Profile", icon: <User className="w-4 h-4" /> },
     { label: "Settings", icon: <SettingsIcon className="w-4 h-4" /> },
-    
+
   ];
   return (
     <DropdownMenu>
