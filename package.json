@@ -17,6 +17,7 @@
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.0.1",
     "react-scripts": "^5.0.1",
+    "repomix": "^0.2.30",
     "screenshot-desktop": "^1.15.0",
     "tailwind-merge": "^2.5.5",
     "tailwind-scrollbar-hide": "^1.1.7",
@@ -29,17 +30,26 @@
     "eject": "react-scripts eject",
     "electron-dev": "concurrently \"cross-env BROWSER=none npm start\" \"wait-on http://localhost:3000 && cross-env NODE_ENV=development electron .\"",
     "electron-pack": "cross-env NODE_ENV=production electron-builder -c.extraMetadata.main=build/electron.js",
-    "preelectron-pack": "npm run build"
+    "preelectron-pack": "npm run build",
+    "postinstall": "electron-builder install-app-deps",
+    "pack": "electron-builder --dir",
+    "dist": "npm run build && electron-builder --mac",
+    "dist:mac": "npm run build && electron-builder --mac"
   },
   "build": {
-    "appId": "com.example.electron-react",
+    "appId": "com.yourdomain.glance",
+    "productName": "Glance",
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icon.icns"
+    },
     "files": [
       "build/**/*",
-      "node_modules/**/*"
-    ],
-    "directories": {
-      "buildResources": "assets"
-    }
+      "node_modules/**/*",
+      "package.json",
+      "main.js",
+      "preload.js"
+    ]
   },
   "eslintConfig": {
     "extends": [
