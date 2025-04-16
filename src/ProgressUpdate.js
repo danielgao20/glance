@@ -1,26 +1,15 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 
 const ProgressUpdate = ({ updates, username, timeFilter, resetUpdate }) => {
   const [summary, setSummary] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   
-  // Use a ref to track if we should reset the summary
-  const shouldResetRef = useRef(false);
-  
-  // Only reset summary when resetUpdate changes from false to true
+  // Reset summary when time filter changes
   useEffect(() => {
     if (resetUpdate) {
-      shouldResetRef.current = true;
-    }
-  }, [resetUpdate]);
-  
-  // Apply the reset when needed, but only once
-  useEffect(() => {
-    if (shouldResetRef.current) {
       setSummary("");
-      shouldResetRef.current = false;
     }
-  }, [timeFilter]);
+  }, [resetUpdate, timeFilter]);
 
   const generateSummary = async () => {
     setIsLoading(true);
@@ -32,7 +21,6 @@ const ProgressUpdate = ({ updates, username, timeFilter, resetUpdate }) => {
     }
     
     try {
-      console.log("Generating summary for updates:", updates);
       const response = await fetch(
         "http://localhost:5001/api/screenshots/generate-summary",
         {
@@ -46,22 +34,56 @@ const ProgressUpdate = ({ updates, username, timeFilter, resetUpdate }) => {
 
       if (!response.ok) throw new Error("Network response was not ok");
       const data = await response.json();
-      console.log("Summary response data:", data);
+      console.log("API response:", data);
       
-      // Store the raw summary directly without parsing or formatting
-      if (data && data.summary) {
-        setSummary(data.summary);
-        console.log("Setting summary to:", data.summary);
-      } else {
-        setSummary("No summary could be generated.");
-        console.warn("No summary data received from API");
-      }
+      // Format the summary for Slack
+      const formattedSummary = formatForSlack(data.summary, timeFilter, username);
+      
+      setSummary(formattedSummary);
     } catch (error) {
       console.error("Error generating summary:", error);
       setSummary("Error generating summary. Please try again.");
     } finally {
       setIsLoading(false);
     }
+  };
+  
+  // Format summary for Slack
+  const formatForSlack = (rawSummary, timeFrame, username) => {
+    let formattedSummary = "";
+    
+    // Optional: Add a header if desired
+    // formattedSummary += `*${timeFrame} Update from ${username}*\n\n`;
+    
+    // Try to parse the summary if it's a JSON string;
+    // If it fails, return the raw summary.
+    let parsedSummary = rawSummary;
+    if (typeof rawSummary === 'string') {
+      try {
+        parsedSummary = JSON.parse(rawSummary);
+      } catch (e) {
+        // Fall back to the raw string if parsing fails.
+        return rawSummary;
+      }
+    }
+    
+    // If the parsedSummary is an array of objects
+    if (Array.isArray(parsedSummary)) {
+      parsedSummary.forEach(item => {
+        if (item.username === "GENERAL") {
+          formattedSummary += `${item.text}\n\n`;
+        } else {
+          formattedSummary += `• ${item.text}\n`;
+        }
+      });
+    } else {
+      // Fallback if the format is unexpected
+      formattedSummary += typeof parsedSummary === 'string' 
+        ? parsedSummary 
+        : JSON.stringify(parsedSummary, null, 2);
+    }
+    
+    return formattedSummary;
   };
 
   // Copy to clipboard function
@@ -94,7 +116,7 @@ const ProgressUpdate = ({ updates, username, timeFilter, resetUpdate }) => {
         <div className="flex flex-col gap-4">
           {summary ? (
             <>
-              <div className="whitespace-pre-line leading-[30px]">
+              <div className="whitespace-pre-line leading-[30px] text-sm">
                 {summary}
               </div>
               <div className="mt-4 flex justify-end">
