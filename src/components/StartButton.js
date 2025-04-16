@@ -37,6 +37,9 @@ const StartButton = ({ onSessionEnd }) => {
         carouselText,
         progressText
       );
+      if (typeof onSessionEnd === 'function') {
+        await onSessionEnd();
+      }
       console.log("Screenshot saved successfully");
     } catch (error) {
       console.error("Error capturing screenshot:", error.message);
@@ -148,25 +151,21 @@ const StartButton = ({ onSessionEnd }) => {
           <div className="absolute inset-0 bg-emerald-500/0 group-hover:bg-emerald-500 transition-colors duration-300 ease-in-out" />
         )}
       </button>
-      {/* Modern interval selection popup */}
+      {/* Dropdown-style interval selection popup */}
       {showIntervalModal && (
         <div
-          className="absolute left-1/2 z-50 mt-2 w-72 -translate-x-1/2"
+          ref={dropdownRef}
+          className="absolute left-1/2 z-50 mt-2 w-72 -translate-x-1/2 bg-zinc-800 rounded-lg shadow-lg border border-zinc-700 animate-fade-in"
           style={{ minWidth: '240px' }}
         >
-          {/* Arrow caret */}
-          <div className="flex justify-center">
-            <div className="w-3 h-3 bg-zinc-800 rotate-45 -mb-1 border-t border-l border-zinc-700" />
-          </div>
-          <div
-            ref={dropdownRef}
-            className="bg-zinc-800 border border-zinc-700 rounded-xl shadow-xl px-6 py-5 flex flex-col items-center animate-fade-in"
-          >
-            <h2 className="text-base font-normal mb-4 text-white">Select Screenshot Interval</h2>
-            <div className="relative w-full mb-5">
+          <div className="px-3 py-3 w-full">
+            <div className="mb-2">
+              <span className="text-sm font-medium text-white">Select Screenshot Interval</span>
+            </div>
+            <div className="relative w-full mb-3">
               <button
                 type="button"
-                className="w-full flex justify-between items-center px-4 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 hover:bg-zinc-800 transition"
+                className="w-full flex justify-between items-center px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-sm text-white font-normal focus:outline-none focus:ring-2 focus:ring-emerald-500 hover:bg-zinc-700 transition"
                 onClick={() => setDropdownOpen((open) => !open)}
                 aria-haspopup="listbox"
                 aria-expanded={dropdownOpen}
@@ -189,16 +188,17 @@ const StartButton = ({ onSessionEnd }) => {
               </button>
               {dropdownOpen && (
                 <ul
-                  className="absolute z-10 mt-2 w-full bg-zinc-900 border border-zinc-700 rounded-lg shadow-lg max-h-60 overflow-auto animate-fade-in"
+                  className="absolute left-0 top-full z-50 mt-2 w-full bg-zinc-800 rounded-lg shadow-lg max-h-60 overflow-auto animate-fade-in"
                   role="listbox"
                   tabIndex={-1}
+                  style={{ minWidth: '100%' }}
                 >
                   {intervalOptions.map((opt, idx) => (
                     <li
                       key={opt}
                       role="option"
                       aria-selected={selectedInterval === opt}
-                      className={`px-4 py-2 cursor-pointer hover:bg-emerald-600 hover:text-white text-zinc-200 ${selectedInterval === opt ? 'bg-emerald-700 text-white' : ''}`}
+                      className={`px-3 py-3 text-sm text-white font-normal cursor-pointer hover:bg-zinc-700 transition-colors ${selectedInterval === opt ? 'bg-emerald-700 text-white' : ''}`}
                       onClick={() => {
                         setSelectedInterval(opt);
                         setDropdownOpen(false);
@@ -218,13 +218,13 @@ const StartButton = ({ onSessionEnd }) => {
               )}
             </div>
             <button
-              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-normal transition mb-2"
+              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-3 rounded-lg text-sm font-medium transition mb-2"
               onClick={handleConfirmInterval}
             >
               Confirm
             </button>
             <button
-              className="w-full bg-zinc-600 hover:bg-zinc-500 text-white px-4 py-2 rounded-lg font-normal transition"
+              className="w-full bg-zinc-600 hover:bg-zinc-500 text-white px-3 py-3 rounded-lg text-sm font-medium transition"
               onClick={() => setShowIntervalModal(false)}
             >
               Cancel

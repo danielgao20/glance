@@ -23,8 +23,9 @@ export const deleteScreenshot = async (fileId) => {
   return response.json();
 };
 
-export const sendScreenshot = async (screenshotPath) => {
+export const sendScreenshot = async (username, screenshotPath) => {
   const formData = new FormData();
+  formData.append("username", username);
   const token = localStorage.getItem("token");
 
   try {

@@ -51,7 +51,7 @@ const ProfileEditModal = ({ isOpen, onClose, onSave, currentUser }) => {
               onClick={handleCancel}
               className="p-2 rounded-full hover:bg-zinc-800 transition-colors"
             >
-              <X className="h-5 w-5" />
+              <X className="h-5 w-5 text-white" />
             </button>
           </div>
 
