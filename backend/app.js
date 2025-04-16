@@ -1,3 +1,4 @@
+// backend/app.js
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -7,6 +8,7 @@ const path = require("path");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/auth");
 const screenshotRoutes = require("./routes/screenshots");
+const profileRoutes = require("./routes/profile"); // Add profile routes
 const cors = require("cors");
 
 dotenv.config();
@@ -24,6 +26,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/profile", profileRoutes); // Add profile routes
 app.use(
   "/api/screenshots",
   (req, res, next) => {

@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Dialog, DialogContent } from "./components/ui/dialog";
 import { X, Trash2 } from "lucide-react";
+import AuthContext from "./context/AuthContext";
 
 export default function VisualProgressUpdate({
-  userName = "Daniel Gao",
+  userName,
   userAvatar = "/placeholder.svg?height=48&width=48",
   carouselText = "Bugs Resolved",
   screenshot = "/placeholder.svg?height=600&width=800",
@@ -11,6 +12,20 @@ export default function VisualProgressUpdate({
   onDelete,
 }) {
   const [isImageExpanded, setIsImageExpanded] = useState(false);
+  const { profile } = useContext(AuthContext);
+
+  // Determine if this update belongs to the current user
+  const isCurrentUser = profile && profile.username === userName;
+
+  // Use profile image if this is the current user and they have a custom profile image
+  const displayAvatar = isCurrentUser && profile.profileImage
+    ? `http://localhost:5001${profile.profileImage}`
+    : userAvatar;
+
+  // Use display name if this is the current user and they have a custom display name
+  const displayName = isCurrentUser && profile.displayName
+    ? profile.displayName
+    : userName;
 
   return (
     <>
@@ -22,16 +37,16 @@ export default function VisualProgressUpdate({
               {/* Profile Section */}
               <div className="flex flex-shrink-0">
                 <img
-                  src={userAvatar}
-                  alt={userName}
-                  className="w-12 h-12 rounded-full"
+                  src={displayAvatar}
+                  alt={displayName}
+                  className="w-12 h-12 rounded-full object-cover"
                 />
               </div>
 
               {/* Name and Description */}
               <div className="flex flex-col">
                 <span className="text-md font-medium text-white">
-                  {userName}
+                  {displayName}
                 </span>
                 <div className="flex items-center gap-2 mt-1">
                   <div className="bg-emerald-500/10 text-[8px] text-emerald-500 border-2 border-emerald-500 hover:bg-emerald-500/20 rounded-md py-0.75 px-1">
@@ -96,11 +111,11 @@ export default function VisualProgressUpdate({
             <div className="space-y-2">
               <div className="flex items-center gap-2 mt-2">
                 <img
-                  src={userAvatar}
-                  alt={userName}
-                  className="w-6 h-6 rounded-full"
+                  src={displayAvatar}
+                  alt={displayName}
+                  className="w-6 h-6 rounded-full object-cover"
                 />
-                <span className="text-sm text-zinc-400">{userName}</span>
+                <span className="text-sm text-zinc-400">{displayName}</span>
               </div>
             </div>
           </div>

@@ -1,0 +1,3499 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+<additional_info>
+
+</additional_info>
+
+</file_summary>
+
+<directory_structure>
+backend/
+  config/
+    db.js
+  middleware/
+    auth.js
+  models/
+    Screenshot.js
+    User.js
+  routes/
+    auth.js
+    screenshots.js
+  temp/
+    627aa30b102ff0d241d1bf7bc62b0825
+  app.js
+  package.json
+public/
+  electron.js
+  index.html
+  manifest.json
+  pfpIcon.svg
+  preload.js
+  robots.txt
+src/
+  components/
+    ui/
+      badge.js
+      card.js
+      dialog.js
+      dropdown-menu.js
+    AllDocumentation.js
+    Documentation.js
+    NewDocumentation.js
+    ProfileEditModal.js
+    ProfilePicture.js
+    StartButton.js
+  context/
+    AuthContext.js
+  img/
+    BlueHour.svg
+    dailyBriefIcon.svg
+    davidPfp.svg
+    davidss.svg
+    dgaoPfp.svg
+    dgaoss.svg
+    ellipse1.svg
+    ellipse2.svg
+    ellipse3.svg
+    ellipse4.svg
+    ellipse5.svg
+    ellipse6.svg
+    folder.svg
+    GreenSquad.svg
+    jonPfp.svg
+    jonss.svg
+    josephinePfp.svg
+    josephiness.svg
+    newDocLogo.svg
+    pfpIcon.svg
+    projectDetailsIcon.svg
+    RedTeam.svg
+    searchIcon.svg
+    Subtract.svg
+    teamIcon.svg
+  pages/
+    Login.js
+    Register.js
+  api.js
+  App.css
+  App.js
+  App.test.js
+  DailyBrief.js
+  index.css
+  index.js
+  ProgressUpdate.js
+  ProgressUpdatesCarousel.js
+  ProjectDetails.js
+  reportWebVitals.js
+  setupTests.js
+  TeamProgress.js
+  TeamSelector.js
+  TimeFilterDropdown.js
+  VisualProgressUpdate.js
+.gitignore
+forge.config.js
+main.js
+package.json
+postcss.config.js
+preload.js
+README.md
+tailwind.config.js
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="src/components/ProfileEditModal.js">
+import React, { useState, useRef } from "react";
+import { Dialog, DialogContent } from "./ui/dialog";
+import { X, Upload, Camera } from "lucide-react";
+
+const ProfileEditModal = ({ isOpen, onClose, onSave, currentUser }) => {
+  const [displayName, setDisplayName] = useState(currentUser?.displayName || "");
+  const [profileImage, setProfileImage] = useState(currentUser?.profileImage || null);
+  const [previewUrl, setPreviewUrl] = useState(currentUser?.profileImage || null);
+  const fileInputRef = useRef(null);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImage(file);
+        setPreviewUrl(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleSave = () => {
+    onSave({
+      displayName,
+      profileImage,
+      previewUrl
+    });
+    onClose();
+  };
+
+  const handleCancel = () => {
+    // Reset form and close
+    setDisplayName(currentUser?.displayName || "");
+    setProfileImage(currentUser?.profileImage || null);
+    setPreviewUrl(currentUser?.profileImage || null);
+    onClose();
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="bg-zinc-900 border border-zinc-800 w-full max-w-md">
+        <div className="p-6 space-y-6">
+          <div className="flex justify-between items-center">
+            <h3 className="text-xl font-semibold text-white">Edit Profile</h3>
+            <button
+              onClick={handleCancel}
+              className="p-2 rounded-full hover:bg-zinc-800 transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          {/* Profile Picture */}
+          <div className="flex flex-col items-center space-y-4">
+            <div className="relative">
+              <div className="w-24 h-24 rounded-full bg-zinc-800 overflow-hidden">
+                {previewUrl ? (
+                  <img 
+                    src={previewUrl} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-zinc-400">
+                    <Camera className="w-8 h-8" />
+                  </div>
+                )}
+              </div>
+              <button 
+                onClick={triggerFileInput}
+                className="absolute bottom-0 right-0 p-1.5 bg-emerald-500 rounded-full text-white hover:bg-emerald-600 transition-colors"
+              >
+                <Upload className="w-4 h-4" />
+              </button>
+              <input 
+                type="file" 
+                ref={fileInputRef}
+                onChange={handleImageChange}
+                accept="image/*"
+                className="hidden"
+              />
+            </div>
+            <p className="text-sm text-zinc-400">
+              Click the icon to upload a new profile picture
+            </p>
+          </div>
+
+          {/* Display Name */}
+          <div className="space-y-2">
+            <label htmlFor="displayName" className="block text-sm font-medium text-zinc-300">
+              Display Name
+            </label>
+            <input
+              type="text"
+              id="displayName"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              placeholder="Your display name"
+            />
+          </div>
+
+          {/* Save/Cancel Buttons */}
+          <div className="flex space-x-3 pt-4">
+            <button
+              onClick={handleCancel}
+              className="flex-1 px-4 py-2 bg-zinc-800 text-white rounded-md hover:bg-zinc-700 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              className="flex-1 px-4 py-2 bg-emerald-500 text-white rounded-md hover:bg-emerald-600 transition-colors"
+              disabled={!displayName.trim()}
+            >
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default ProfileEditModal;
+</file>
+
+<file path="src/ProgressUpdate.js">
+import React, { useState, useEffect, useRef } from "react";
+
+const ProgressUpdate = ({ updates, username, timeFilter, resetUpdate }) => {
+  const [summary, setSummary] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Use a ref to track if we should reset the summary
+  const shouldResetRef = useRef(false);
+  
+  // Only reset summary when resetUpdate changes from false to true
+  // useEffect(() => {
+  //   if (resetUpdate) {
+  //     shouldResetRef.current = true;
+  //   }
+  // }, [resetUpdate]);
+  
+  // Apply the reset when needed, but only once
+  useEffect(() => {
+    if (shouldResetRef.current) {
+      setSummary("");
+      shouldResetRef.current = false;
+    }
+  }, [timeFilter]);
+
+  const generateSummary = async () => {
+    setIsLoading(true);
+    
+    if (updates.length === 0) {
+      setSummary("No updates available for the selected time period.");
+      setIsLoading(false);
+      return;
+    }
+    
+    try {
+      console.log("Generating summary for updates:", updates);
+      const response = await fetch(
+        "http://localhost:5001/api/screenshots/generate-summary",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ progressUpdates: updates }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Network response was not ok");
+      const data = await response.json();
+      console.log("Summary response data:", data);
+      
+      // Store the raw summary directly without parsing or formatting
+      if (data && data.summary) {
+        setSummary(data.summary);
+        console.log("Setting summary to:", data.summary);
+      } else {
+        setSummary("No summary could be generated.");
+        console.warn("No summary data received from API");
+      }
+    } catch (error) {
+      console.error("Error generating summary:", error);
+      setSummary("Error generating summary. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Copy to clipboard function
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(summary).then(
+      () => {
+        alert("Summary copied to clipboard!");
+      },
+      (err) => {
+        console.error("Could not copy text: ", err);
+      }
+    );
+  };
+
+  return (
+    <div className="w-full h-full flex flex-col bg-zinc-900 rounded-lg border-2 border-[#414344] overflow-hidden">
+      <div className="p-8 pb-4 flex-shrink-0">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-medium">Progress Update</h2>
+          <button
+            onClick={generateSummary}
+            disabled={isLoading}
+            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+          >
+            {isLoading ? "Generating..." : "Generate Summary"}
+          </button>
+        </div>
+      </div>
+      <div className="flex-1 scrollbar-hide overflow-y-auto overflow-x-hidden p-8 pt-2">
+        <div className="flex flex-col gap-4">
+          {summary ? (
+            <>
+              <div className="whitespace-pre-line leading-[30px]">
+                {summary}
+              </div>
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={copyToClipboard}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                >
+                  Copy
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="text-zinc-500">
+              <p>
+                Click 'Generate Summary' to create a progress update for <span className="font-medium text-zinc-400">{timeFilter}</span> that you can share with your team.
+              </p>
+              {updates.length === 0 && (
+                <p className="mt-4">
+                  No updates available for this time period.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProgressUpdate;
+</file>
+
+<file path="forge.config.js">
+module.exports = {
+  packagerConfig: {
+    // Your packager options
+    asar: true,
+    // macOS specific options
+    darwinDarkModeSupport: true,
+    // icon: './path/to/your/icon.icns' // macOS icon needs .icns format
+  },
+  makers: [
+    {
+      name: '@electron-forge/maker-dmg',
+      config: {
+        // DMG customization options
+        format: 'ULFO', // Ultra-compressed
+        // icon: './path/to/your/icon.icns',
+        // background: './path/to/background.png', // Optional background image
+        contents: (opts) => {
+          return [
+            {
+              x: 448,
+              y: 344,
+              type: 'link',
+              path: '/Applications'
+            },
+            {
+              x: 192,
+              y: 344,
+              type: 'file',
+              path: opts.appPath
+            }
+          ];
+        }
+      }
+    }
+  ]
+};
+</file>
+
+<file path="backend/config/db.js">
+const mongoose = require('mongoose');
+
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log('MongoDB Atlas connected successfully');
+  } catch (error) {
+    console.error('MongoDB connection error:', error.message);
+    process.exit(1);
+  }
+};
+
+module.exports = connectDB;
+</file>
+
+<file path="backend/middleware/auth.js">
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
+
+module.exports = async function (req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ message: 'No token provided' });
+  }
+  const token = authHeader.split(' ')[1];
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select('-password');
+    if (!user) return res.status(401).json({ message: 'User not found' });
+    req.user = user;
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: 'Invalid token' });
+  }
+}
+</file>
+
+<file path="backend/models/Screenshot.js">
+const mongoose = require('mongoose');
+
+const screenshotSchema = new mongoose.Schema({
+  username: { type: String, required: true },
+  fileId: { type: mongoose.Types.ObjectId, required: true },
+  description: { type: String, required: true },
+  created_at: { type: Date, default: Date.now },
+});
+
+module.exports = mongoose.model('Screenshot', screenshotSchema);
+</file>
+
+<file path="backend/models/User.js">
+const mongoose = require('mongoose');
+
+const userSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  created_at: { type: Date, default: Date.now },
+  token: { type: String },
+});
+
+module.exports = mongoose.model('User', userSchema);
+</file>
+
+<file path="backend/routes/auth.js">
+const express = require('express');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
+
+const router = express.Router();
+
+// User Registration
+router.post('/register', async (req, res) => {
+  const { username, password } = req.body;
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({ username, password: hashedPassword });
+    await newUser.save();
+    res.status(201).json({ message: 'User registered successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// User Login
+router.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+  try {
+    const user = await User.findOne({ username });
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: '1d',
+    });
+    user.token = token;
+    await user.save();
+    res.json({ token, username: user.username });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+module.exports = router;
+
+// Get current user
+router.get('/me', async (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1]; // Extract token from Authorization header
+  if (!token) return res.status(401).json({ message: 'No token provided' });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select('-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json(user);
+  } catch (error) {
+    res.status(401).json({ message: 'Invalid token' });
+  }
+});
+</file>
+
+<file path="backend/temp/627aa30b102ff0d241d1bf7bc62b0825">
+dummy screenshot data
+</file>
+
+<file path="backend/package.json">
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "axios": "^1.7.7",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.11.0",
+    "mongoose": "^8.8.2",
+    "multer": "^1.4.5-lts.1",
+    "multer-gridfs-storage": "^5.0.2",
+    "openai": "^4.73.0",
+    "socket.io": "^4.8.1",
+    "tesseract.js": "^5.1.1"
+  }
+}
+</file>
+
+<file path="public/pfpIcon.svg">
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_607_466)">
+<rect width="48.002" height="48.002" rx="24.001" fill="#1DFDAD"/>
+<circle cx="24.0006" cy="18.8576" r="8.57143" fill="#1CCD8E"/>
+<circle cx="24.001" cy="43.7163" r="15.4292" fill="#1CCD8E"/>
+<g clip-path="url(#clip1_607_466)">
+<circle cx="24.001" cy="24.001" r="24.001" fill="#1DFDAD"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M11.6768 23.9668V36.1468H23.8568V48.0015C23.9045 48.0018 23.9523 48.002 24.0001 48.002C32.8235 48.002 40.5349 43.2407 44.7052 36.1473H23.8575V23.9673H48.0011C47.9829 10.7274 37.2443 0 24.0001 0C23.9525 0 23.905 0.000138457 23.8575 0.000414991V23.9668H11.6768Z" fill="#5944F1"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_607_466">
+<rect width="48.002" height="48.002" rx="24.001" fill="white"/>
+</clipPath>
+<clipPath id="clip1_607_466">
+<rect width="48.002" height="48.002" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+</file>
+
+<file path="public/preload.js">
+// preload.js
+const { contextBridge, ipcRenderer } = require("electron");
+
+// Expose protected methods that allow the renderer process to use
+// the ipcRenderer without exposing the entire object
+contextBridge.exposeInMainWorld("electron", {
+  // File operations
+  readFile: (filePath) => ipcRenderer.invoke("read-file", filePath),
+  writeFile: (filePath, content) =>
+    ipcRenderer.invoke("write-file", filePath, content),
+
+  // App info
+  getAppVersion: () => ipcRenderer.invoke("get-app-version"),
+
+  // Window controls
+  minimize: () => ipcRenderer.send("minimize-window"),
+  maximize: () => ipcRenderer.send("maximize-window"),
+  close: () => ipcRenderer.send("close-window"),
+
+  // Communication
+  on: (channel, callback) => {
+    const validChannels = ["update-available", "progress-update"];
+    if (validChannels.includes(channel)) {
+      ipcRenderer.on(channel, (event, ...args) => callback(...args));
+    }
+  },
+
+  // Native dialogs
+  showOpenDialog: (options) => ipcRenderer.invoke("show-open-dialog", options),
+  showSaveDialog: (options) => ipcRenderer.invoke("show-save-dialog", options),
+});
+</file>
+
+<file path="public/robots.txt">
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Disallow:
+</file>
+
+<file path="src/components/ui/badge.js">
+import * as React from "react";
+
+const Badge = React.forwardRef(
+  ({ className, variant = "default", ...props }, ref) => {
+    const variantClasses = {
+      default: "bg-zinc-800 text-zinc-400 hover:bg-zinc-700",
+      secondary: "bg-zinc-700 text-zinc-300 hover:bg-zinc-600",
+      destructive: "bg-red-900 text-red-300 hover:bg-red-800",
+    };
+
+    return (
+      <div
+        ref={ref}
+        className={`inline-flex items-center rounded-full border border-zinc-700 px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-600 focus:ring-offset-2 ${variantClasses[variant]} ${className}`}
+        {...props}
+      />
+    );
+  }
+);
+Badge.displayName = "Badge";
+
+export { Badge };
+</file>
+
+<file path="src/components/ui/card.js">
+import * as React from "react";
+
+const Card = React.forwardRef(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={`rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-400 shadow-sm ${className}`}
+    {...props}
+  />
+));
+Card.displayName = "Card";
+
+const CardHeader = React.forwardRef(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={`flex flex-col space-y-1.5 p-6 ${className}`}
+    {...props}
+  />
+));
+CardHeader.displayName = "CardHeader";
+
+const CardTitle = React.forwardRef(({ className, ...props }, ref) => (
+  <h3
+    ref={ref}
+    className={`text-lg font-semibold leading-none tracking-tight text-zinc-50 ${className}`}
+    {...props}
+  />
+));
+CardTitle.displayName = "CardTitle";
+
+const CardDescription = React.forwardRef(({ className, ...props }, ref) => (
+  <p ref={ref} className={`text-sm text-zinc-500 ${className}`} {...props} />
+));
+CardDescription.displayName = "CardDescription";
+
+const CardContent = React.forwardRef(({ className, ...props }, ref) => (
+  <div ref={ref} className={`p-6 pt-0 ${className}`} {...props} />
+));
+CardContent.displayName = "CardContent";
+
+const CardFooter = React.forwardRef(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={`flex items-center p-6 pt-0 ${className}`}
+    {...props}
+  />
+));
+CardFooter.displayName = "CardFooter";
+
+export {
+  Card,
+  CardHeader,
+  CardFooter,
+  CardTitle,
+  CardDescription,
+  CardContent,
+};
+</file>
+
+<file path="src/components/ui/dialog.js">
+import * as React from "react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { X } from "lucide-react";
+
+const Dialog = DialogPrimitive.Root;
+const DialogTrigger = DialogPrimitive.Trigger;
+const DialogPortal = DialogPrimitive.Portal;
+
+const DialogOverlay = React.forwardRef(({ className, ...props }, ref) => (
+  <DialogPrimitive.Overlay
+    ref={ref}
+    className={`fixed inset-0 z-50 bg-black/80 ${className}`}
+    {...props}
+  />
+));
+DialogOverlay.displayName = "DialogOverlay";
+
+const DialogContent = React.forwardRef(
+  ({ className, children, ...props }, ref) => (
+    <DialogPortal>
+      <DialogOverlay />
+      <DialogPrimitive.Content
+        ref={ref}
+        className={`fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%] border border-zinc-800 bg-zinc-900 p-6 shadow-lg rounded-lg ${className}`}
+        {...props}
+      >
+        {children}
+        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 hover:opacity-100">
+          <span className="sr-only">Close</span>
+        </DialogPrimitive.Close>
+      </DialogPrimitive.Content>
+    </DialogPortal>
+  )
+);
+DialogContent.displayName = "DialogContent";
+
+const DialogHeader = React.forwardRef(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={`flex flex-col space-y-1.5 text-center sm:text-left ${className}`}
+    {...props}
+  />
+));
+DialogHeader.displayName = "DialogHeader";
+
+const DialogFooter = React.forwardRef(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={`flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 ${className}`}
+    {...props}
+  />
+));
+DialogFooter.displayName = "DialogFooter";
+
+const DialogTitle = React.forwardRef(({ className, ...props }, ref) => (
+  <DialogPrimitive.Title
+    ref={ref}
+    className={`text-lg font-semibold text-zinc-50 ${className}`}
+    {...props}
+  />
+));
+DialogTitle.displayName = "DialogTitle";
+
+const DialogDescription = React.forwardRef(({ className, ...props }, ref) => (
+  <DialogPrimitive.Description
+    ref={ref}
+    className={`text-sm text-zinc-500 ${className}`}
+    {...props}
+  />
+));
+DialogDescription.displayName = "DialogDescription";
+
+export {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+};
+</file>
+
+<file path="src/components/ui/dropdown-menu.js">
+import * as React from "react";
+import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
+
+const DropdownMenu = DropdownMenuPrimitive.Root;
+
+const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
+
+const DropdownMenuContent = React.forwardRef(({ className, ...props }, ref) => (
+  <DropdownMenuPrimitive.Content
+    ref={ref}
+    className={`z-50 min-w-[8rem] overflow-hidden rounded-md border border-zinc-800 bg-zinc-900 p-1 text-zinc-400 shadow-md ${className}`}
+    {...props}
+  />
+));
+DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName;
+
+const DropdownMenuItem = React.forwardRef(({ className, ...props }, ref) => (
+  <DropdownMenuPrimitive.Item
+    ref={ref}
+    className={`relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-zinc-800 focus:text-zinc-50 ${className}`}
+    {...props}
+  />
+));
+DropdownMenuItem.displayName = DropdownMenuPrimitive.Item.displayName;
+
+const DropdownMenuLabel = React.forwardRef(({ className, ...props }, ref) => (
+  <DropdownMenuPrimitive.Label
+    ref={ref}
+    className={`px-2 py-1.5 text-sm font-semibold ${className}`}
+    {...props}
+  />
+));
+DropdownMenuLabel.displayName = DropdownMenuPrimitive.Label.displayName;
+
+const DropdownMenuSeparator = React.forwardRef(
+  ({ className, ...props }, ref) => (
+    <DropdownMenuPrimitive.Separator
+      ref={ref}
+      className={`-mx-1 my-1 h-px bg-zinc-800 ${className}`}
+      {...props}
+    />
+  )
+);
+DropdownMenuSeparator.displayName = DropdownMenuPrimitive.Separator.displayName;
+
+export {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+};
+</file>
+
+<file path="src/components/AllDocumentation.js">
+import React from "react";
+import Documentation from "./Documentation";
+
+const documentationItems = [
+  {
+    title: "Compilation of Issues",
+    description:
+      "A comprehensive list of all known issues and bugs in the project.",
+    category: "Team Progress",
+    lastUpdated: "2024-11-30",
+  },
+  {
+    title: "Timeline & Milestones",
+    description: "Project timeline with key milestones and deadlines.",
+    category: "Team Progress",
+    lastUpdated: "2024-11-29",
+  },
+  {
+    title: "Game Design Document",
+    description:
+      "Detailed game design document outlining core mechanics and features.",
+    category: "Team Progress",
+    lastUpdated: "2024-11-28",
+  },
+  {
+    title: "Character Iterations",
+    description: "Evolution of character designs through multiple iterations.",
+    category: "3D Models",
+    lastUpdated: "2024-11-27",
+  },
+  {
+    title: "Weapon Models",
+    description: "3D models and textures for all in-game weapons.",
+    category: "3D Models",
+    lastUpdated: "2024-11-26",
+  },
+  {
+    title: "Rigged Assets",
+    description: "Fully rigged 3D assets ready for animation.",
+    category: "3D Models",
+    lastUpdated: "2024-11-25",
+  },
+  {
+    title: "Bugs",
+    description:
+      "Detailed reports of identified bugs and their current status.",
+    category: "Development",
+    lastUpdated: "2024-11-24",
+  },
+  {
+    title: "Tech Stack",
+    description: "Overview of the technology stack used in the project.",
+    category: "Development",
+    lastUpdated: "2024-11-23",
+  },
+  {
+    title: "Specification & Features",
+    description: "Detailed specifications of game features and functionality.",
+    category: "Development",
+    lastUpdated: "2024-11-22",
+  },
+];
+
+const AllDocumentation = () => {
+  return (
+    <div className="flex-1 px-4 py-6 overflow-y-auto">
+      <h1 className="text-2xl font-bold mb-6 text-white">All Documentation</h1>
+      <Documentation items={documentationItems} />
+    </div>
+  );
+};
+
+export default AllDocumentation;
+</file>
+
+<file path="src/components/Documentation.js">
+import React from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { Badge } from "../components/ui/badge";
+
+const Documentation = ({ items }) => {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {items.map((item, index) => (
+        <Card
+          key={index}
+          className="bg-zinc-900 border-zinc-800 hover:border-zinc-700 transition-colors duration-200"
+        >
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-white">
+              {item.title}
+            </CardTitle>
+            <CardDescription className="text-zinc-400">
+              {item.description}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex justify-between items-center">
+              <Badge variant="secondary" className="bg-zinc-800 text-zinc-300">
+                {item.category}
+              </Badge>
+              <span className="text-xs text-zinc-500">
+                Last updated: {item.lastUpdated}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+};
+
+export default Documentation;
+</file>
+
+<file path="src/components/NewDocumentation.js">
+import React, { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "../components/ui/card";
+import { Badge } from "../components/ui/badge";
+
+const NewDocumentation = () => {
+  const [title, setTitle] = useState("");
+  const [category, setCategory] = useState("");
+  const [content, setContent] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Here you would typically send the data to your backend or state management system
+    console.log({ title, category, content });
+    // Reset form after submission
+    setTitle("");
+    setCategory("");
+    setContent("");
+  };
+
+  return (
+    <div className="flex-1 px-4 py-6 overflow-y-auto">
+      <h1 className="text-2xl font-bold mb-6 text-white">New Documentation</h1>
+      <div className="flex gap-6">
+        <Card className="w-1/2 bg-zinc-900 border-zinc-800">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-white">
+              Create New Document
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label
+                  htmlFor="title"
+                  className="block text-sm font-medium text-zinc-300 mb-1"
+                >
+                  Title
+                </label>
+                <input
+                  type="text"
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="category"
+                  className="block text-sm font-medium text-zinc-300 mb-1"
+                >
+                  Category
+                </label>
+                <input
+                  type="text"
+                  id="category"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="content"
+                  className="block text-sm font-medium text-zinc-300 mb-1"
+                >
+                  Content
+                </label>
+                <textarea
+                  id="content"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  rows="10"
+                  className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                ></textarea>
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300"
+              >
+                Create Document
+              </button>
+            </form>
+          </CardContent>
+        </Card>
+        <Card className="w-1/2 bg-zinc-900 border-zinc-800">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-white">
+              Preview
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <h2 className="text-xl font-bold text-white mb-2">
+              {title || "Document Title"}
+            </h2>
+            {category && <Badge className="mb-4">{category}</Badge>}
+            <div className="prose prose-invert">
+              {content || "Your document content will appear here..."}
+            </div>
+          </CardContent>
+          <CardFooter>
+            <p className="text-sm text-zinc-400">
+              Last updated: {new Date().toLocaleDateString()}
+            </p>
+          </CardFooter>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default NewDocumentation;
+</file>
+
+<file path="src/context/AuthContext.js">
+import React, { createContext, useState, useEffect } from "react";
+
+const AuthContext = createContext();
+
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    // Load user session from localStorage
+    const storedUser = localStorage.getItem("username");
+    if (storedUser) {
+      setUser(storedUser);
+    }
+  }, []);
+
+  const login = (username) => {
+    setUser(username);
+    localStorage.setItem("username", username);
+  };
+
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem("username");
+    localStorage.removeItem("token");
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export default AuthContext;
+</file>
+
+<file path="src/App.test.js">
+import { render, screen } from '@testing-library/react';
+import App from './App';
+
+test('renders learn react link', () => {
+  render(<App />);
+  const linkElement = screen.getByText(/learn react/i);
+  expect(linkElement).toBeInTheDocument();
+});
+</file>
+
+<file path="src/ProjectDetails.js">
+import React, { useState } from "react";
+import { Dialog } from "@headlessui/react";
+import { DialogPanel, DialogTitle } from "@headlessui/react";
+import projectDetailsIcon from "./img/projectDetailsIcon.svg";
+
+const DailyBrief = ({}) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const mockProjectData = {
+    date: new Date().toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+    }),
+    tasks: [
+      {
+        type: "Core Gameplay Loop",
+        description:
+          "Curate a playable experience for player where their actions result in fun interactions",
+      },
+      {
+        type: "3D Models",
+        description:
+          "Model characters, enemies, and landscape elements for the game",
+      },
+      {
+        type: "Music + SFX",
+        description:
+          "Find necessary audio components to immerse player further within game",
+      },
+    ],
+  };
+
+  return (
+    <>
+      <button
+        onClick={() => setIsOpen(true)}
+        className="flex items-center bg-zinc-900 rounded-lg p-4 hover:bg-zinc-800 transition-colors w-18"
+      >
+        <img
+          src={projectDetailsIcon}
+          className="h-[18px] w-[18px] mr-2"
+          alt="Project Details"
+        />
+        <span className="text-sm font-medium">Project Details</span>
+      </button>
+
+      <Dialog
+        open={isOpen}
+        onClose={() => setIsOpen(false)}
+        className="relative z-50"
+      >
+        {/* Background backdrop */}
+        <div className="fixed inset-0 bg-black/80" aria-hidden="true" />
+
+        {/* Full-screen container to center the panel */}
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <DialogPanel className="max-w-2xl w-full bg-zinc-900 rounded-lg p-6 shadow-xl">
+            <DialogTitle className="text-xl font-semibold text-white">
+              Project Details
+            </DialogTitle>
+
+            <div className="mt-4 space-y-6">
+              <div className="space-y-4">
+                {mockProjectData.tasks.map((task, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                      <h3 className="font-medium text-sm text-zinc-200">
+                        {task.type}
+                      </h3>
+                    </div>
+                    <p className="text-sm text-zinc-400 pl-4">
+                      {task.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <button
+              onClick={() => setIsOpen(false)}
+              className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-200"
+            >
+              ✕
+            </button>
+          </DialogPanel>
+        </div>
+      </Dialog>
+    </>
+  );
+};
+
+export default DailyBrief;
+</file>
+
+<file path="src/reportWebVitals.js">
+const reportWebVitals = onPerfEntry => {
+  if (onPerfEntry && onPerfEntry instanceof Function) {
+    import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
+      getCLS(onPerfEntry);
+      getFID(onPerfEntry);
+      getFCP(onPerfEntry);
+      getLCP(onPerfEntry);
+      getTTFB(onPerfEntry);
+    });
+  }
+};
+
+export default reportWebVitals;
+</file>
+
+<file path="src/setupTests.js">
+// jest-dom adds custom jest matchers for asserting on DOM nodes.
+// allows you to do things like:
+// expect(element).toHaveTextContent(/react/i)
+// learn more: https://github.com/testing-library/jest-dom
+import '@testing-library/jest-dom';
+</file>
+
+<file path="src/TeamSelector.js">
+"use client";
+
+import React, { useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./components/ui/dropdown-menu";
+import {
+  ChevronDown,
+  MoreVertical,
+  Plus,
+  UserPlus,
+  Settings,
+  UserPlus2,
+  LogOut,
+} from "lucide-react";
+import BlueHour from "./img/BlueHour.svg";
+import RedTeam from "./img/RedTeam.svg";
+import GreenSquad from "./img/GreenSquad.svg";
+
+const teams = [
+  { id: "1", name: "Blue Hour", icon: BlueHour },
+  { id: "2", name: "Red Team", icon: RedTeam },
+  { id: "3", name: "Green Squad", icon: GreenSquad },
+];
+
+export default function TeamSelector() {
+  const [selectedTeam, setSelectedTeam] = useState(teams[0]);
+
+  const handleTeamChange = (team) => {
+    setSelectedTeam(team);
+    // Add any additional logic for team change here
+  };
+
+  const handleJoinTeam = () => {
+    // Implement join team logic
+    console.log("Join team clicked");
+  };
+
+  const handleCreateTeam = () => {
+    // Implement create team logic
+    console.log("Create team clicked");
+  };
+
+  const handleTeamSettings = () => {
+    // Implement team settings logic
+    console.log("Team settings clicked");
+  };
+
+  const handleInviteMembers = () => {
+    // Implement invite members logic
+    console.log("Invite members clicked");
+  };
+
+  const handleLeaveTeam = () => {
+    // Implement leave team logic
+    console.log("Leave team clicked");
+  };
+
+  return (
+    <div className="flex items-center justify-between bg-zinc-900 rounded-md py-2 px-2">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            className="flex items-center gap-2 px-3 py-3 rounded-md hover:bg-zinc-700 transition-colors duration-200 focus:outline-none"
+            aria-label="Select team"
+          >
+            <img
+              src={selectedTeam.icon}
+              alt=""
+              className="w-8 h-8 rounded-md"
+            />
+            <span className="text-lg font-medium text-white truncate">
+              {selectedTeam.name}
+            </span>
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          className="w-56 bg-zinc-900 border border-zinc-700 rounded-md shadow-lg"
+          align="start"
+        >
+          <DropdownMenuLabel className="text-zinc-400 px-2 py-1.5 text-xs font-semibold">
+            Teams
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator className="bg-zinc-700" />
+          {teams.map((team) => (
+            <DropdownMenuItem
+              key={team.id}
+              className="px-2 py-2 hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer transition-colors duration-150"
+              onClick={() => handleTeamChange(team)}
+            >
+              <div className="flex items-center gap-3 w-full">
+                <img
+                  src={team.icon}
+                  alt=""
+                  className="w-6 h-6 rounded-md flex-shrink-0"
+                />
+                <span className="text-sm font-medium text-white truncate">
+                  {team.name}
+                </span>
+              </div>
+            </DropdownMenuItem>
+          ))}
+          <DropdownMenuSeparator className="bg-zinc-700" />
+          <DropdownMenuItem
+            className="px-2 py-2 hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer transition-colors duration-150"
+            onClick={handleJoinTeam}
+          >
+            <div className="flex items-center gap-3 text-zinc-400">
+              <UserPlus className="w-4 h-4 flex-shrink-0" />
+              <span className="text-sm">Join Team</span>
+            </div>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="px-2 py-2 hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer transition-colors duration-150"
+            onClick={handleCreateTeam}
+          >
+            <div className="flex items-center gap-3 text-zinc-400">
+              <Plus className="w-4 h-4 flex-shrink-0" />
+              <span className="text-sm">Create Team</span>
+            </div>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            className="p-2 rounded-md hover:bg-zinc-800 transition-colors duration-200 focus:outline-none"
+            aria-label="Team options"
+          >
+            <MoreVertical className="h-5 w-5 text-zinc-400" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          className="w-48 bg-zinc-900 border border-zinc-700 rounded-md shadow-lg"
+          align="end"
+        >
+          <DropdownMenuItem
+            className="px-2 py-2 hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer transition-colors duration-150"
+            onClick={handleTeamSettings}
+          >
+            <div className="flex items-center gap-3 text-zinc-400">
+              <Settings className="w-4 h-4 flex-shrink-0" />
+              <span className="text-sm">Team Settings</span>
+            </div>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="px-2 py-2 hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer transition-colors duration-150"
+            onClick={handleInviteMembers}
+          >
+            <div className="flex items-center gap-3 text-zinc-400">
+              <UserPlus2 className="w-4 h-4 flex-shrink-0" />
+              <span className="text-sm">Invite Members</span>
+            </div>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator className="bg-zinc-700" />
+          <DropdownMenuItem
+            className="px-2 py-2 hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer transition-colors duration-150"
+            onClick={handleLeaveTeam}
+          >
+            <div className="flex items-center gap-3 text-red-400">
+              <LogOut className="w-4 h-4 flex-shrink-0" />
+              <span className="text-sm">Leave Team</span>
+            </div>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}
+</file>
+
+<file path="postcss.config.js">
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+</file>
+
+<file path="preload.js">
+const { contextBridge, ipcRenderer } = require('electron');
+const fs = require('fs');
+const path = require('path');
+
+contextBridge.exposeInMainWorld('electronAPI', {
+  sendMessage: (channel, data) => {
+    console.log(`Sending message on channel: ${channel}, with data:`, data);
+    ipcRenderer.send(channel, data);
+  },
+  onMessage: (channel, callback) => {
+    console.log(`Listening for messages on channel: ${channel}`);
+    ipcRenderer.on(channel, (event, ...args) => callback(...args));
+  },
+  fetchUserInfo: async () => {
+    return ipcRenderer.invoke('get-user-info');
+  },
+  fs: fs.promises,
+  path: path,
+});
+</file>
+
+<file path="backend/app.js">
+const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
+const dotenv = require("dotenv");
+const bodyParser = require("body-parser");
+const path = require("path");
+const connectDB = require("./config/db");
+const authRoutes = require("./routes/auth");
+const screenshotRoutes = require("./routes/screenshots");
+const cors = require("cors");
+
+dotenv.config();
+connectDB();
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
+
+// Middleware
+app.use(cors({ origin: "http://localhost:3000" })); // Allow requests from frontend
+app.use(bodyParser.json({ limit: "10mb" }));
+app.use(bodyParser.urlencoded({ extended: true, limit: "10mb" }));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// Routes
+app.use("/api/auth", authRoutes);
+app.use(
+  "/api/screenshots",
+  (req, res, next) => {
+    req.io = io;
+    next();
+  },
+  screenshotRoutes
+);
+
+const PORT = process.env.PORT || 5001;
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+</file>
+
+<file path="public/electron.js">
+const { app, BrowserWindow, ipcMain, dialog } = require("electron");
+const path = require("path");
+const fs = require("fs").promises;
+
+const isDev = process.env.NODE_ENV !== "production";
+
+function createWindow() {
+  // Create the browser window.
+  const mainWindow = new BrowserWindow({
+    width: 1920,
+    height: 1080,
+    webPreferences: {
+      nodeIntegration: false, // Security: Disable Node.js integration in renderer
+      contextIsolation: true, // Security: Enable context isolation
+      preload: path.join(__dirname, "preload.js"), // Load the preload script
+    },
+  });
+
+  // Load the app
+  mainWindow.loadURL(
+    isDev
+      ? "http://localhost:3000"
+      : `file://${path.join(__dirname, "../build/index.html")}`
+  );
+
+  if (isDev) {
+    //mainWindow.webContents.openDevTools();
+  }
+
+  // Handle IPC messages
+  ipcMain.handle("read-file", async (event, filePath) => {
+    try {
+      const content = await fs.readFile(filePath, "utf8");
+      return content;
+    } catch (error) {
+      throw error;
+    }
+  });
+
+  ipcMain.handle("write-file", async (event, filePath, content) => {
+    try {
+      await fs.writeFile(filePath, content, "utf8");
+      return true;
+    } catch (error) {
+      throw error;
+    }
+  });
+
+  ipcMain.handle("get-app-version", () => {
+    return app.getVersion();
+  });
+
+  ipcMain.handle("show-open-dialog", async (event, options) => {
+    return await dialog.showOpenDialog(mainWindow, options);
+  });
+
+  ipcMain.handle("show-save-dialog", async (event, options) => {
+    return await dialog.showSaveDialog(mainWindow, options);
+  });
+
+  // Window control handlers
+  ipcMain.on("minimize-window", () => {
+    mainWindow.minimize();
+  });
+
+  ipcMain.on("maximize-window", () => {
+    if (mainWindow.isMaximized()) {
+      mainWindow.unmaximize();
+    } else {
+      mainWindow.maximize();
+    }
+  });
+
+  ipcMain.on("close-window", () => {
+    mainWindow.close();
+  });
+}
+
+app.whenReady().then(createWindow);
+
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
+    app.quit();
+  }
+});
+
+app.on("activate", () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow();
+  }
+});
+</file>
+
+<file path="public/manifest.json">
+{
+  "short_name": "Glance",
+  "name": "Glance",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
+</file>
+
+<file path="src/components/ProfilePicture.js">
+"use client";
+
+import React, { useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import {
+  Circle,
+  CreditCard,
+  User,
+  Settings as SettingsIcon,
+} from "lucide-react";
+import pfpIcon from "../img/pfpIcon.svg";
+import AuthContext from "../context/AuthContext";
+
+const ProfilePicture = () => {
+  const { logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  const options = [
+    { label: "Status", icon: <Circle className="w-4 h-4 text-green-500" /> },
+    { label: "Free Plan", icon: <CreditCard className="w-4 h-4" /> },
+    { label: "Personal Info", icon: <User className="w-4 h-4" /> },
+    { label: "Settings", icon: <SettingsIcon className="w-4 h-4" /> },
+  ];
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="p-2 hover:bg-zinc-800/50 rounded-full transition-colors focus:outline-none">
+          <img src={pfpIcon} className="h-12 w-12" alt="Profile" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        className="w-48 bg-zinc-800 rounded-lg shadow-lg overflow-hidden"
+      >
+        {options.map((option) => (
+          <DropdownMenuItem
+            key={option.label}
+            className="px-3 py-3 text-sm hover:bg-zinc-700 transition-colors cursor-pointer"
+          >
+            <div className="flex items-center gap-2">
+              {option.icon}
+              <span>{option.label}</span>
+            </div>
+          </DropdownMenuItem>
+        ))}
+        {/* Log Out Option */}
+        <DropdownMenuItem
+          onClick={handleLogout}
+          className="px-3 py-3 text-sm text-red-500 hover:bg-red-700/20 transition-colors cursor-pointer"
+        >
+          <span>Log Out</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
+export default ProfilePicture;
+</file>
+
+<file path="src/pages/Login.js">
+// Login.js
+import React, { useState, useContext } from "react";
+import { Link } from "react-router-dom";
+import AuthContext from "../context/AuthContext";
+import glanceLogo from "../img/Subtract.svg";
+
+const Login = () => {
+  const { login } = useContext(AuthContext);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch("http://localhost:5001/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      if (!response.ok) {
+        throw new Error("Invalid credentials");
+      }
+      const data = await response.json();
+      localStorage.setItem("token", data.token);
+      login(username);
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Login failed:", error.message);
+      alert("Login failed. Please try again.");
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-center h-screen bg-black text-white font-inter">
+      <div className="w-full max-w-md p-8">
+        <div className="flex justify-center mb-12">
+          <div className="flex items-center">
+            <img src={glanceLogo} className="h-12 w-9 mr-3" alt="Logo" />
+            <h1 className="font-custom text-4xl">glance</h1>
+          </div>
+        </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2">
+            <label className="text-sm text-zinc-400">Username</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="bg-zinc-900 rounded-lg h-12 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-white border border-[#414344]"
+              required
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm text-zinc-400">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="bg-zinc-900 rounded-lg h-12 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-white border border-[#414344]"
+              required
+            />
+          </div>
+          <button className="h-12 bg-zinc-900 rounded-lg text-sm hover:bg-zinc-800 transition-colors border border-[#414344]">
+            Sign In
+          </button>
+          <p className="text-center text-sm text-zinc-400">
+            Don't have an account?{" "}
+            <Link to="/register" className="text-white hover:underline">
+              Sign Up
+            </Link>
+          </p>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default Login;
+</file>
+
+<file path="src/pages/Register.js">
+// Register.js
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import glanceLogo from "../img/Subtract.svg";
+
+const Register = () => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch("http://localhost:5001/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      if (!response.ok) {
+        throw new Error("Registration failed");
+      }
+      alert("Registration successful! Please log in.");
+      window.location.href = "/login";
+    } catch (error) {
+      console.error("Registration failed:", error.message);
+      alert("Registration failed. Please try again.");
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-center h-screen bg-black text-white font-inter">
+      <div className="w-full max-w-md p-8">
+        <div className="flex justify-center mb-12">
+          <div className="flex items-center">
+            <img src={glanceLogo} className="h-12 w-9 mr-3" alt="Logo" />
+            <h1 className="font-custom text-4xl">glance</h1>
+          </div>
+        </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2">
+            <label className="text-sm text-zinc-400">Username</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="bg-zinc-900 rounded-lg h-12 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-white border border-[#414344]"
+              required
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm text-zinc-400">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="bg-zinc-900 rounded-lg h-12 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-white border border-[#414344]"
+              required
+            />
+          </div>
+          <button className="h-12 bg-zinc-900 rounded-lg text-sm hover:bg-zinc-800 transition-colors border border-[#414344]">
+            Create Account
+          </button>
+          <p className="text-center text-sm text-zinc-400">
+            Already have an account?{" "}
+            <Link to="/login" className="text-white hover:underline">
+              Sign In
+            </Link>
+          </p>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default Register;
+</file>
+
+<file path="src/api.js">
+export const fetchScreenshots = async () => {
+  const response = await fetch("http://localhost:5001/api/screenshots", {
+    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch screenshots");
+  }
+
+  return response.json();
+};
+
+export const deleteScreenshot = async (fileId) => {
+  const token = localStorage.getItem("token");
+  const response = await fetch(`http://localhost:5001/api/screenshots/${fileId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) {
+    throw new Error("Failed to delete screenshot");
+  }
+  return response.json();
+};
+
+export const sendScreenshot = async (screenshotPath) => {
+  const formData = new FormData();
+  const token = localStorage.getItem("token");
+
+  try {
+    const fileData = await window.electronAPI.fs.readFile(screenshotPath);
+    formData.append("screenshot", new Blob([fileData], { type: "image/jpeg" }));
+
+    const response = await fetch("http://localhost:5001/api/screenshots", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to save screenshot");
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Error processing screenshot:", error.message);
+    throw error;
+  }
+};
+</file>
+
+<file path="src/App.css">
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+</file>
+
+<file path="src/DailyBrief.js">
+import React, { useState } from "react";
+import { Dialog } from "@headlessui/react";
+import { DialogPanel, DialogTitle } from "@headlessui/react";
+import dailyBriefIcon from "./img/dailyBriefIcon.svg";
+
+const DailyBrief = ({}) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const mockBriefData = {
+    date: new Date().toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+    }),
+    tasks: [
+      {
+        type: "Code Review",
+        description:
+          "Reviewed and approved 3 PRs for the authentication feature",
+      },
+      {
+        type: "Development",
+        description: "Fixed 2 critical bugs in the user dashboard",
+      },
+      {
+        type: "Meeting",
+        description: "Participated in daily standup and sprint planning",
+      },
+    ],
+  };
+
+  return (
+    <>
+      <button
+        onClick={() => setIsOpen(true)}
+        className="flex items-center bg-zinc-900 rounded-lg py-4 px-5 hover:bg-zinc-800 transition-colors w-18"
+      >
+        <img
+          src={dailyBriefIcon}
+          className="h-[18px] w-[18px] mr-2"
+          alt="Daily Brief"
+        />
+        <span className="text-sm font-medium">Daily Brief</span>
+      </button>
+
+      <Dialog
+        open={isOpen}
+        onClose={() => setIsOpen(false)}
+        className="relative z-50"
+      >
+        {/* Background backdrop */}
+        <div className="fixed inset-0 bg-black/80" aria-hidden="true" />
+
+        {/* Full-screen container to center the panel */}
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <DialogPanel className="max-w-2xl w-full bg-zinc-900 rounded-lg p-6 shadow-xl">
+            <DialogTitle className="text-xl font-semibold text-white">
+              Daily Brief - {mockBriefData.date}
+            </DialogTitle>
+
+            <div className="mt-4 space-y-6">
+              <div className="space-y-4">
+                {mockBriefData.tasks.map((task, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                      <h3 className="font-medium text-sm text-zinc-200">
+                        {task.type}
+                      </h3>
+                    </div>
+                    <p className="text-sm text-zinc-400 pl-4">
+                      {task.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-4 border-t border-zinc-800">
+                <h3 className="text-sm text-white font-medium mb-2">Summary</h3>
+                <p className="text-sm text-zinc-400">
+                  Yesterday was productive with focus on code quality and team
+                  collaboration. Completed all planned tasks and contributed to
+                  project milestones.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setIsOpen(false)}
+              className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-200"
+            >
+              ✕
+            </button>
+          </DialogPanel>
+        </div>
+      </Dialog>
+    </>
+  );
+};
+
+export default DailyBrief;
+</file>
+
+<file path="src/index.css">
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+</file>
+
+<file path="src/index.js">
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css';
+import App from './App';
+import { AuthProvider } from './context/AuthContext'; // Import AuthProvider
+import reportWebVitals from './reportWebVitals';
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <AuthProvider> {/* Wrap the app with AuthProvider */}
+      <App />
+    </AuthProvider>
+  </React.StrictMode>
+);
+
+reportWebVitals();
+</file>
+
+<file path="src/TimeFilterDropdown.js">
+"use client";
+
+import React, { useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./components/ui/dropdown-menu";
+import { ChevronDown } from "lucide-react";
+
+export default function TimeFilterDropdown() {
+  const [selected, setSelected] = useState("This Week");
+
+  const options = ["Today", "This Week", "This Month"];
+
+  const handleTimeChange = (option) => {
+    setSelected(option);
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          className="flex items-center gap-2 px-3 py-1.5 border-2 border-[#414344] bg-zinc-800/80 rounded-lg text-sm hover:bg-zinc-700/80 transition-colors duration-200 focus:outline-none"
+          aria-label="Select time range"
+        >
+          {selected}
+          <ChevronDown className="w-4 h-4" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        className="w-32 bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg"
+        align="start"
+      >
+        {options.map((option) => (
+          <DropdownMenuItem
+            key={option}
+            className="px-3 py-1.5 hover:bg-zinc-700 focus:bg-zinc-700 cursor-pointer transition-colors duration-150"
+            onClick={() => handleTimeChange(option)}
+          >
+            <span
+              className={`text-sm ${option === selected ? "font-medium" : ""}`}
+            >
+              {option}
+            </span>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+</file>
+
+<file path=".gitignore">
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# env
+.env
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# production
+/build
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+uploads/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# tesseract
+*.traineddata
+</file>
+
+<file path="main.js">
+const { app, BrowserWindow, ipcMain } = require('electron');
+const path = require('path');
+const fs = require('fs');
+const screenshot = require('screenshot-desktop');
+
+let mainWindow;
+
+app.whenReady().then(() => {
+  mainWindow = new BrowserWindow({
+    width: 1920,
+    height: 1080,
+    minHeight: 570,
+    minWidth: 1250,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      sandbox: false,
+      nodeIntegration: false,
+    },
+  });
+
+  mainWindow.loadURL("http://localhost:3000");
+});
+
+// Handle screenshot requests
+ipcMain.on('capture-screenshot', async (event) => {
+  try {
+    const uploadsDir = path.join(__dirname, './backend/uploads');
+    if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+
+    const screenshotPath = path.join(uploadsDir, `screenshot-${Date.now()}.jpg`);
+    await screenshot({ filename: screenshotPath });
+
+    event.sender.send('screenshot-captured', screenshotPath);
+  } catch (error) {
+    event.sender.send('screenshot-error', error.message);
+  }
+});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit();
+});
+</file>
+
+<file path="tailwind.config.js">
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: ["./src/**/*.{js,jsx,ts,tsx}"],
+  theme: {
+    extend: {
+      fontFamily: {
+        custom: ['"Bricolage Grotesque"', "sans-serif"],
+        inter: ["Inter", "sans-serif"], // Add this line for Inter font
+      },
+    },
+  },
+  plugins: [require("tailwind-scrollbar-hide")],
+};
+</file>
+
+<file path="public/index.html">
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/glancefav.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Web site created using create-react-app"
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <!--
+      manifest.json provides metadata used when your web app is installed on a
+      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
+    -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <!--
+      Notice the use of %PUBLIC_URL% in the tags above.
+      It will be replaced with the URL of the `public` folder during the build.
+      Only files inside the `public` folder can be referenced from the HTML.
+
+      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
+      work correctly both with client-side routing and a non-root public URL.
+      Learn how to configure a non-root public URL by running `npm run build`.
+    -->
+    <title>Glance</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <!--
+      This HTML file is a template.
+      If you open it directly in the browser, you will see an empty page.
+
+      You can add webfonts, meta tags, or analytics to this file.
+      The build step will place the bundled scripts into the <body> tag.
+
+      To begin the development, run `npm start` or `yarn start`.
+      To create a production bundle, use `npm run build` or `yarn build`.
+    -->
+  </body>
+</html>
+</file>
+
+<file path="src/components/StartButton.js">
+import React, { useState, useRef } from "react";
+import { sendScreenshot } from "../api";
+
+const StartButton = ({ onSessionEnd }) => {
+  const [isRunning, setIsRunning] = useState(false);
+  const intervalRef = useRef(null);
+
+  const captureScreenshot = async () => {
+    try {
+      const username = localStorage.getItem("username");
+
+      if (!window.electronAPI) {
+        throw new Error("electronAPI is not available");
+      }
+
+      window.electronAPI.sendMessage("capture-screenshot");
+
+      const screenshotPath = await new Promise((resolve, reject) => {
+        window.electronAPI.onMessage("screenshot-captured", resolve);
+        window.electronAPI.onMessage("screenshot-error", reject);
+      });
+
+      // Add default text for carousel and progress
+      const timestamp = new Date().toLocaleTimeString();
+      const carouselText = `Progress Update at ${timestamp}`;
+      const progressText = `Captured screenshot of current work in progress at ${timestamp}`;
+
+      await sendScreenshot(
+        username,
+        screenshotPath,
+        carouselText,
+        progressText
+      );
+      console.log("Screenshot saved successfully");
+    } catch (error) {
+      console.error("Error capturing screenshot:", error.message);
+    }
+  };
+
+  const startSession = () => {
+    setIsRunning(true);
+    captureScreenshot();
+    intervalRef.current = setInterval(captureScreenshot, 30000);
+  };
+
+  const stopSession = async () => {
+    setIsRunning(false);
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    // Refresh screenshots when session ends
+    await onSessionEnd();
+  };
+
+  const handleClick = () => {
+    if (isRunning) {
+      stopSession();
+    } else {
+      startSession();
+    }
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      className={`
+        relative flex items-center rounded-lg p-4 overflow-hidden group transition-all duration-300
+        ${
+          isRunning
+            ? "bg-red-500 hover:bg-red-600 border-2 border-red-500"
+            : "bg-zinc-900 border-2 border-emerald-500 hover:shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+        }
+      `}
+    >
+      <span
+        className={`
+          text-sm font-medium relative z-10 transition-colors duration-300
+          ${
+            isRunning ? "text-white" : "text-emerald-500 group-hover:text-white"
+          }
+        `}
+      >
+        {isRunning ? "Stop Session" : "Start Session"}
+      </span>
+      {!isRunning && (
+        <div className="absolute inset-0 bg-emerald-500/0 group-hover:bg-emerald-500 transition-colors duration-300 ease-in-out" />
+      )}
+    </button>
+  );
+};
+
+export default StartButton;
+</file>
+
+<file path="src/TeamProgress.js">
+import React, { useState, useEffect, useRef } from "react";
+import TimeFilterDropdown from "./TimeFilterDropdown";
+
+const colorMapping = {
+  GENERAL: "bg-transparent",
+  David: "bg-blue-500/30",
+  david: "bg-blue-500/30",
+  Jon: "bg-yellow-500/30",
+  jon: "bg-yellow-500/30",
+  Josephine: "bg-purple-500/30",
+  josephine: "bg-purple-500/30",
+  Daniel: "bg-emerald-500/30",
+  daniel: "bg-emerald-500/30",
+  dgao: "bg-red-500/30"
+};
+
+const TeamProgress = ({ updates }) => {
+  // Log each render to track component lifecycle
+  console.log("TeamProgress rendering, updates length:", updates?.length);
+  
+  // Use useState with localStorage initialization for persistence
+  const [summary, setSummary] = useState(() => {
+    const savedSummary = localStorage.getItem('teamSummary');
+    if (savedSummary) {
+      try {
+        return JSON.parse(savedSummary);
+      } catch (e) {
+        console.error("Error parsing saved summary:", e);
+        return [];
+      }
+    }
+    return [];
+  });
+  
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Also keep a ref as backup in case component remounts
+  const summaryRef = useRef([]);
+  
+  // Update ref and localStorage when summary changes
+  useEffect(() => {
+    console.log("Summary state updated:", summary);
+    summaryRef.current = summary;
+    
+    if (summary.length > 0) {
+      localStorage.setItem('teamSummary', JSON.stringify(summary));
+    }
+  }, [summary]);
+  
+  // Debug effect to track updates prop changes
+  useEffect(() => {
+    console.log("Updates prop changed, new length:", updates?.length);
+  }, [updates]);
+
+  const generateSummary = async () => {
+    setIsLoading(true);
+    console.log("Generating summary from updates:", updates);
+    
+    try {
+      const response = await fetch(
+        "http://localhost:5001/api/screenshots/generate-summary",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ progressUpdates: updates }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Network response was not ok");
+      const data = await response.json();
+      console.log("Raw summary data:", data.summary);
+      
+      // Check if the summary is a string that needs parsing
+      let parsedSummary;
+      if (typeof data.summary === 'string') {
+        try {
+          parsedSummary = JSON.parse(data.summary);
+        } catch (e) {
+          console.error("Error parsing summary:", e);
+          // If parsing fails, try to clean the string
+          const cleanedSummary = data.summary.replace(/\n/g, '').trim();
+          try {
+            parsedSummary = JSON.parse(cleanedSummary);
+          } catch (e2) {
+            console.error("Error parsing cleaned summary:", e2);
+            // Last resort - check if it looks like array syntax
+            if (data.summary.startsWith('[') && data.summary.endsWith(']')) {
+              console.log("Applying manual parsing for array-like string");
+              try {
+                // Force evaluation as JavaScript (use with caution)
+                // eslint-disable-next-line no-eval
+                parsedSummary = eval(`(${data.summary})`);
+              } catch (e3) {
+                console.error("All parsing attempts failed:", e3);
+              }
+            }
+          }
+        }
+      } else {
+        // If it's not a string, assume it's already parsed
+        parsedSummary = data.summary;
+      }
+      
+      console.log("Final parsed summary:", parsedSummary);
+      
+      // Extra safety check before setting state
+      if (Array.isArray(parsedSummary) && parsedSummary.length > 0) {
+        // Store in ref immediately
+        summaryRef.current = parsedSummary;
+        // Update state
+        setSummary(parsedSummary);
+        // Also keep in localStorage for persistence
+        localStorage.setItem('teamSummary', JSON.stringify(parsedSummary));
+        console.log("Summary state and storage updated successfully");
+      } else {
+        console.error("Summary is not a valid array or is empty:", parsedSummary);
+      }
+    } catch (error) {
+      console.error("Error generating summary:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Use the summary state or fallback to the ref if state is empty
+  const displaySummary = summary.length > 0 ? summary : summaryRef.current;
+
+  return (
+    <div className="w-full h-full flex flex-col bg-zinc-900 rounded-lg border-2 border-[#414344] overflow-hidden">
+      <div className="p-8 pb-4 flex-shrink-0">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-medium">Team Progress</h2>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={generateSummary}
+              disabled={isLoading}
+              className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+            >
+              {isLoading ? "Generating..." : "Generate Summary"}
+            </button>
+            <TimeFilterDropdown />
+          </div>
+        </div>
+      </div>
+      <div className="flex-1 scrollbar-hide overflow-y-auto overflow-x-hidden p-8 pt-2">
+        <div className="flex flex-col gap-4">
+          {displaySummary.length > 0 ? (
+            <p className="leading-[30px]">
+              {displaySummary.map((item, index) => (
+                <span
+                  key={index}
+                  className={`${
+                    colorMapping[item.username] || "bg-zinc-500/10"
+                  } p-1 rounded`}
+                >
+                  {item.text}{' '}
+                </span>
+              ))}
+            </p>
+          ) : (
+            <p className="text-zinc-500">
+              Click 'Generate Summary' to analyze team progress.
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TeamProgress;
+</file>
+
+<file path="README.md">
+### backend
+```
+cd backend
+npm i --legacy-peer-deps
+node app.js
+```
+
+### frontend
+```
+npm i
+npm run electron-dev
+```
+
+### branches
+```
+git checkout -b feature/new-branch
+git push -u origin feature/new-branch
+```
+</file>
+
+<file path="src/ProgressUpdatesCarousel.js">
+"use client";
+
+import React, { useRef } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import VisualProgressUpdate from "./VisualProgressUpdate";
+
+const ProgressUpdatesScroll = ({ updates, onDelete }) => {
+  const scrollContainerRef = useRef(null);
+
+  const scroll = (direction) => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      const scrollAmount = container.clientWidth * 0.8;
+      const currentScroll = container.scrollLeft;
+      container.scrollTo({
+        left: direction === "left" ? currentScroll - scrollAmount : currentScroll + scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  return (
+    <div className="relative">
+      <button
+        className="absolute left-2 top-1/2 transform -translate-y-1/2 z-10 p-2 rounded-full opacity-50 bg-zinc-800 hover:bg-zinc-700 hover:opacity-80 transition-colors"
+        onClick={() => scroll("left")}
+      >
+        <ChevronLeft className="w-6 h-6 text-white" />
+      </button>
+
+      <div className="relative">
+        <div
+          ref={scrollContainerRef}
+          className="flex w-full min-h-[300px] overflow-x-auto rounded-lg bg-zinc-900 border-2 border-[#414344] scrollbar-hide"
+          style={{ scrollBehavior: "smooth" }}
+        >
+          {updates.map((update, index) => (
+            <div key={index} className="flex-none w-112 snap-center px-4">
+              <VisualProgressUpdate {...update} fileId={update.fileId} onDelete={onDelete} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <button
+        className="absolute right-2 top-1/2 transform -translate-y-1/2 z-10 p-2 rounded-full opacity-50 bg-zinc-800 hover:bg-zinc-700 hover:opacity-80 transition-colors"
+        onClick={() => scroll("right")}
+      >
+        <ChevronRight className="w-6 h-6 text-white" />
+      </button>
+    </div>
+  );
+};
+
+export default ProgressUpdatesScroll;
+</file>
+
+<file path="package.json">
+{
+  "name": "glance-mvp-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "main": "main.js",
+  "dependencies": {
+    "@headlessui/react": "^2.2.0",
+    "@radix-ui/react-collapsible": "^1.1.1",
+    "@radix-ui/react-dialog": "^1.1.2",
+    "@radix-ui/react-dropdown-menu": "^2.1.2",
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.460.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.0.1",
+    "react-scripts": "^5.0.1",
+    "screenshot-desktop": "^1.15.0",
+    "tailwind-merge": "^2.5.5",
+    "tailwind-scrollbar-hide": "^1.1.7",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "electron-dev": "concurrently \"cross-env BROWSER=none npm start\" \"wait-on http://localhost:3000 && cross-env NODE_ENV=development electron .\"",
+    "electron-pack": "cross-env NODE_ENV=production electron-builder -c.extraMetadata.main=build/electron.js",
+    "preelectron-pack": "npm run build"
+  },
+  "build": {
+    "appId": "com.example.electron-react",
+    "files": [
+      "build/**/*",
+      "node_modules/**/*"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    }
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^9.1.0",
+    "cross-env": "^7.0.3",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.15",
+    "wait-on": "^8.0.1"
+  }
+}
+</file>
+
+<file path="backend/routes/screenshots.js">
+const express = require("express");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+const { GridFSBucket } = require("mongodb");
+const Tesseract = require("tesseract.js"); // OCR library
+const axios = require("axios");
+const dotenv = require("dotenv");
+const mongoose = require("mongoose");
+
+dotenv.config();
+const auth = require('../middleware/auth');
+const router = express.Router();
+const upload = multer({ dest: "temp/" }); // Temporary storage for incoming files
+
+const mongoURI = process.env.MONGO_URI;
+const openaiAPIKey = process.env.OPENAI_API_KEY;
+
+if (!mongoURI || !openaiAPIKey) {
+  console.error(
+    "Environment variables MONGO_URI and OPENAI_API_KEY must be defined."
+  );
+  process.exit(1);
+}
+
+// Add to your existing screenshots.js router
+router.post("/generate-summary", async (req, res) => {
+  try {
+    const { progressUpdates } = req.body;
+
+    const prompt = `
+      Given the progress updates from different team members,
+
+      Provide me a summary of the team progress in the following JSON structure:
+      [
+        {
+          "text": <PART OF PARAGRAPH THAT IS A GENERAL SENTENCE>,
+          "username": "GENERAL"
+        },
+        {
+          "text": <PART OF PARAGRAPH THAT IS A  SENTENCE ABOUT username's CONTRIBUTION>,
+          "username": <USERNAME OF WHO CONTRIBUTED>
+        },
+        {
+          "text": <PART OF PARAGRAPH THAT IS A  SENTENCE ABOUT username's CONTRIBUTION>,
+          "username": <USERNAME OF WHO CONTRIBUTED>
+        }
+      ]
+
+      <SAMPLE INPUT>
+      Sample Input:
+      David: working on stripe dashboard and creating a new item
+      David: integrating the stripe payment wall into the application on VScode
+      David: Paying for an item in a stripe payment user interface
+
+      Alice: Working on figma prototyping landing page design
+      Alice: Creating the new logo for the landing page
+      Alice: Creating new frames for the different sub pages for the landing pages
+
+
+      Sample Output:
+      [
+        {
+          "text": "Throughout the day, the team worked on the application, especially in the payments integration and new design for the landing page.",
+          "username": "GENERAL"
+        },
+        {
+          "text": "David worked on integrating the payment gateway into the website. He added a new page for the payment form and updated the backend to handle payment processing.",
+          "username": "David"
+        },
+        {
+          "text": "Alice completed the design for the landing page. She created a hero section with a call-to-action button and added testimonials from customers.",
+          "username": "Alice"
+        }
+      ] 
+      </SAMPLE INPUT>
+    `;
+
+    const input = progressUpdates
+      .map((update) => `${update.userName}: ${update.progressText}`)
+      .join("\n");
+    console.log(input);
+    const response = await axios.post(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        model: "gpt-4-turbo",
+        messages: [
+          { role: "system", content: prompt },
+          {
+            role: "user",
+            content: `Progress of the team: ${input}`,
+          },
+        ],
+        max_tokens: 500,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${openaiAPIKey}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const summary = response.data.choices[0].message.content.trim();
+    console.log(summary);
+    res.json({ summary });
+  } catch (error) {
+    console.error("Error generating summary:", error);
+    res.status(500).json({ error: "Failed to generate summary" });
+  }
+});
+
+// POST route for saving screenshots
+router.post("/", auth, upload.single("screenshot"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    const conn = mongoose.connection;
+    const gfs = new GridFSBucket(conn.db, { bucketName: "screenshots" });
+
+    const filename = `${Date.now()}-${req.file.originalname}`;
+    const filePath = path.resolve(req.file.path);
+
+    // Perform OCR on the saved file
+    console.log("Starting OCR process...");
+    const ocrResult = await Tesseract.recognize(filePath, "eng");
+    const extractedText = ocrResult.data.text;
+
+    console.log("Extracted Text:", extractedText);
+
+    // Generate description using OpenAI API
+    const description = await generateDescription(extractedText);
+
+    // description is a json object with carouselText and progressText
+    // parse the description and print the carouselText and progressText
+    const descriptionObj = JSON.parse(description);
+    console.log("Carousel Text:", descriptionObj.carouselText);
+    console.log("Progress Text:", descriptionObj.progressText);
+
+    const uploadStream = gfs.openUploadStream(filename, {
+      metadata: {
+        username: req.body.username,
+        carouselText: descriptionObj.carouselText,
+        progressText: descriptionObj.progressText,
+      }, // Include carousel and progress text in metadata
+    });
+
+    // Pipe the file to GridFS
+    fs.createReadStream(filePath)
+      .pipe(uploadStream)
+      .on("error", (err) => {
+        console.error("Error during upload to GridFS:", err);
+        res.status(500).json({ error: "Failed to upload screenshot" });
+      })
+      .on("finish", () => {
+        console.log("File uploaded successfully:", uploadStream.id);
+        fs.unlinkSync(filePath);
+
+        res.status(201).json({
+          username: req.user.username,
+          fileId: uploadStream.id,
+          carouselText: descriptionObj.carouselText,
+          progressText: descriptionObj.progressText,
+        });
+      });
+  } catch (error) {
+    console.error("Unexpected error:", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// GET route for fetching screenshots metadata
+router.get("/", auth, async (req, res) => {
+  try {
+    const conn = mongoose.connection;
+    const gfs = new GridFSBucket(conn.db, { bucketName: "screenshots" });
+
+    const files = await gfs.find({ 'metadata.username': req.user.username }).toArray();
+    res.status(200).json(
+      files.map((file) => ({
+        username: file.metadata?.username || "Unknown",
+        carouselText: file.metadata?.carouselText || "No description available",
+        progressText: file.metadata?.progressText || "No description available",
+        fileId: file._id,
+      }))
+    );
+  } catch (error) {
+    console.error("Error fetching screenshots:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET route for fetching image by file ID
+router.get("/image/:id", (req, res) => {
+  const conn = mongoose.connection;
+  const gfs = new GridFSBucket(conn.db, { bucketName: "screenshots" });
+
+  const fileId = new mongoose.Types.ObjectId(req.params.id);
+
+  gfs
+    .openDownloadStream(fileId)
+    .pipe(res)
+    .on("error", (err) => {
+      console.error("Error streaming image:", err.message);
+      res.status(404).json({ error: "Image not found" });
+    });
+});
+
+// Function to generate description using OpenAI API
+async function generateDescription(extractedText) {
+  try {
+    const prompt = `
+      Provided an extracted texts from a screenshot, analyze it and generate a JSON object with the following format about the content:
+      {
+        "carouselText": <LESS THAN 5 WORD SUMMARY OF THE SCREENSHOT>,
+        "progressText": <MORE THAN 10 WORD, LESS THAN 20 WORD SUMMARY OF THE SCREENSHOT>
+      }
+      In the content, please try to avoid using the words "screenshot", "image", or quotation marks.
+    `;
+
+    const response = await axios.post(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        model: "gpt-4-turbo",
+        messages: [
+          { role: "system", content: prompt },
+          { role: "user", content: extractedText },
+        ],
+        max_tokens: 100,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${openaiAPIKey}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const description = response.data.choices[0].message.content.trim();
+    console.log("Generated description:", description);
+    return description || "Description could not be generated.";
+  } catch (error) {
+    console.error("Error generating description:", error.message);
+    return "Description generation failed.";
+  }
+}
+
+// DELETE route for deleting a screenshot by fileId
+router.delete('/:id', auth, async (req, res) => {
+  try {
+    const fileId = req.params.id;
+    const conn = mongoose.connection;
+    const gfs = new GridFSBucket(conn.db, { bucketName: 'screenshots' });
+    const objectId = new mongoose.Types.ObjectId(fileId);
+
+    // Delete file from GridFS
+    await gfs.delete(objectId);
+
+    // Remove associated Screenshot document if it exists
+    try {
+      const Screenshot = require('../models/Screenshot');
+      await Screenshot.deleteOne({ fileId: objectId });
+    } catch (err) {
+      // If Screenshot model or document doesn't exist, ignore
+    }
+
+    res.status(200).json({ message: 'Screenshot deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting screenshot:', error.message);
+    res.status(500).json({ error: 'Failed to delete screenshot' });
+  }
+});
+
+module.exports = router;
+</file>
+
+<file path="src/VisualProgressUpdate.js">
+import React, { useState } from "react";
+import { Dialog, DialogContent } from "./components/ui/dialog";
+import { X, Trash2 } from "lucide-react";
+
+export default function VisualProgressUpdate({
+  userName = "Daniel Gao",
+  userAvatar = "/placeholder.svg?height=48&width=48",
+  carouselText = "Bugs Resolved",
+  screenshot = "/placeholder.svg?height=600&width=800",
+  fileId,
+  onDelete,
+}) {
+  const [isImageExpanded, setIsImageExpanded] = useState(false);
+
+  return (
+    <>
+      <div className="border-0 overflow-hidden rounded-lg mx-2 w-fit">
+        <div className="p-4 space-y-4">
+          {/* User Info and carouselText */}
+          <div className="flex flex-col space-y-2">
+            <div className="flex items-center gap-4">
+              {/* Profile Section */}
+              <div className="flex flex-shrink-0">
+                <img
+                  src={userAvatar}
+                  alt={userName}
+                  className="w-12 h-12 rounded-full"
+                />
+              </div>
+
+              {/* Name and Description */}
+              <div className="flex flex-col">
+                <span className="text-md font-medium text-white">
+                  {userName}
+                </span>
+                <div className="flex items-center gap-2 mt-1">
+                  <div className="bg-emerald-500/10 text-[8px] text-emerald-500 border-2 border-emerald-500 hover:bg-emerald-500/20 rounded-md py-0.75 px-1">
+                    Progress Update
+                  </div>
+                  <span className="text-xs text-white break-words max-w-[14rem]">
+                    {carouselText}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Screenshot */}
+          <div className="relative rounded-lg overflow-hidden border-2 border-[#414344]">
+            <img
+              src={screenshot}
+              alt={`Screenshot for ${carouselText}`}
+              className="w-full h-48 object-cover cursor-pointer"
+              onClick={() => setIsImageExpanded(true)}
+            />
+          </div>
+        </div>
+      </div>
+      <Dialog open={isImageExpanded} onOpenChange={setIsImageExpanded}>
+        <DialogContent className="max-w-[95vw] lg:max-w-[1200px] p-6 bg-zinc-900 border border-zinc-800">
+          <div className="space-y-4">
+            {/* Header with debug info */}
+            <div className="flex justify-between items-center gap-2">
+              <h3 className="text-lg font-semibold text-white">{carouselText}</h3>
+
+              <div className="flex gap-2 items-center ml-auto">
+                {fileId && onDelete && (
+                  <button
+                    className="p-2 rounded-full bg-zinc-900/80 hover:bg-red-600 hover:text-white transition-colors shadow-lg z-50"
+                    title="Delete screenshot"
+                    style={{ boxShadow: '0 4px 24px 0 rgba(0,0,0,0.3)' }}
+                    onClick={() => { setIsImageExpanded(false); onDelete(fileId); }}
+                  >
+                    <Trash2 className="h-5 w-5 text-white" />
+                  </button>
+                )}
+                <button
+                  onClick={() => setIsImageExpanded(false)}
+                  className="p-2 rounded-full hover:bg-zinc-800 transition-colors"
+                >
+                  <X className="h-5 w-5 text-white" />
+                </button>
+              </div>
+            </div>
+
+            {/* Image */}
+            <div className="relative rounded-lg overflow-hidden">
+              <img
+                src={screenshot}
+                alt={`Screenshot for ${carouselText}`}
+                className="w-full h-auto object-contain max-h-[70vh]"
+              />
+            </div>
+
+            {/* Description */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 mt-2">
+                <img
+                  src={userAvatar}
+                  alt={userName}
+                  className="w-6 h-6 rounded-full"
+                />
+                <span className="text-sm text-zinc-400">{userName}</span>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+</file>
+
+<file path="src/App.js">
+import React, { useContext, useEffect, useState } from "react";
+import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
+import * as Collapsible from "@radix-ui/react-collapsible";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import glanceLogo from "./img/Subtract.svg";
+import newDocLogo from "./img/newDocLogo.svg";
+import allDoc from "./img/folder.svg";
+import searchIcon from "./img/searchIcon.svg";
+import dgaoPfp from "./img/dgaoPfp.svg";
+import ProgressUpdatesCarousel from "./ProgressUpdatesCarousel";
+import TimeFilterDropdown from "./TimeFilterDropdown";
+import DailyBrief from "./DailyBrief";
+import ProjectDetails from "./ProjectDetails";
+import StartButton from "./components/StartButton";
+import TeamSelector from "./TeamSelector";
+import AllDocumentation from "./components/AllDocumentation";
+import NewDocumentation from "./components/NewDocumentation";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import AuthContext from "./context/AuthContext";
+import { fetchScreenshots, deleteScreenshot } from "./api";
+import ellipse1 from "./img/ellipse1.svg";
+import ellipse2 from "./img/ellipse2.svg";
+import ellipse3 from "./img/ellipse3.svg";
+import ellipse4 from "./img/ellipse4.svg";
+import ellipse5 from "./img/ellipse5.svg";
+import ellipse6 from "./img/ellipse6.svg";
+import ProfilePicture from "./components/ProfilePicture";
+import TeamProgress from "./TeamProgress";
+
+function App() {
+  const { user, logout } = useContext(AuthContext);
+  const [updates, setUpdates] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  function areScreenshotArraysEqual(arr1, arr2) {
+  if (arr1.length !== arr2.length) return false;
+  for (let i = 0; i < arr1.length; i++) {
+    if (arr1[i].fileId !== arr2[i].fileId) return false;
+  }
+  return true;
+}
+
+const refreshScreenshots = async () => {
+  if (user) {
+    try {
+      const screenshots = await fetchScreenshots();
+      const newUpdates = screenshots
+        .map((screenshot) => ({
+          userName: screenshot.username,
+          userAvatar: dgaoPfp,
+          carouselText: screenshot.carouselText,
+          progressText: screenshot.progressText,
+          fileId: screenshot.fileId,
+          screenshot: `http://localhost:5001/api/screenshots/image/${screenshot.fileId}`,
+        }))
+        .reverse();
+
+      setUpdates(prevUpdates => {
+        if (areScreenshotArraysEqual(newUpdates, prevUpdates)) {
+          return prevUpdates; // No change, do not rerender
+        }
+        return newUpdates; // Only update if different
+      });
+    } catch (error) {
+      console.error("Error fetching screenshots:", error);
+    }
+  }
+};  
+
+  const navItems = [
+    {
+      title: "New Documentation",
+      icon: <img src={newDocLogo} alt="plus" />,
+      path: "/new-documentation",
+    },
+    {
+      title: "All Documentation",
+      icon: <img src={allDoc} alt="folder" />,
+      path: "/all-documentation",
+    },
+    {
+      title: "Team Progress",
+      icon: <img src={ellipse1} alt="folder" />,
+      subitems: [
+        "Compilation of Issues",
+        "Timeline & Milestones",
+        "Game Design Document",
+      ],
+    },
+    {
+      title: "3D Models",
+      icon: <img src={ellipse2} alt="folder" />,
+      subitems: ["Character Iterations", "Weapon Models", "Rigged Assets"],
+    },
+    {
+      title: "Development",
+      icon: <img src={ellipse3} alt="folder" />,
+      subitems: ["Bugs", "Tech Stack", "Specification & Features"],
+    },
+    {
+      title: "Marketing",
+      icon: <img src={ellipse4} alt="folder" />,
+      subitems: ["Successful Campaigns", "Resources"],
+    },
+    {
+      title: "UI & UX",
+      icon: <img src={ellipse5} alt="folder" />,
+      subitems: ["Interface Iterations", "Final User Flow"],
+    },
+    {
+      title: "Concept Art",
+      icon: <img src={ellipse6} alt="folder" />,
+      subitems: ["Character Art", "World Building", "Emote Templates"],
+    },
+  ];
+
+  useEffect(() => {
+    let interval = null;
+
+    const poll = async () => {
+      await refreshScreenshots();
+    };
+
+    const startPolling = () => {
+      if (!interval) {
+        poll(); // Initial load
+        interval = setInterval(poll, 5000);
+      }
+    };
+
+    const stopPolling = () => {
+      if (interval) {
+        clearInterval(interval);
+        interval = null;
+      }
+    };
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        startPolling();
+      } else {
+        stopPolling();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibility);
+    if (document.visibilityState === "visible") {
+      startPolling();
+    }
+
+    return () => {
+      stopPolling();
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [user]);
+
+  // Delete handler
+  const handleDeleteScreenshot = async (fileId) => {
+    try {
+      await deleteScreenshot(fileId);
+      setUpdates(prev => prev.filter(update => update.fileId !== fileId));
+    } catch (error) {
+      alert("Failed to delete screenshot");
+    }
+  };
+
+  const HomePage = () => (
+    <div className="w-full h-full flex flex-col overflow-hidden">
+      {/* Carousel section - more responsive height */}
+      <div className="flex-2 min-h-0 max-h-[55%] max-w-full overflow-hidden">
+        <ProgressUpdatesCarousel updates={updates} onDelete={handleDeleteScreenshot} />
+      </div>
+      
+      {/* Spacer with consistent height */}
+      <div className="h-4"></div>
+      
+      {/* Progress boxes section - more responsive height */}
+      <div className="flex-[2] min-h-0 flex gap-4">
+        <div className="flex-1 min-w-0">
+          <div className="w-full h-full flex flex-col bg-zinc-900 rounded-lg border-2 border-[#414344] overflow-hidden">
+            <div className="p-4 md:p-6 lg:p-8 pb-2 md:pb-3 lg:pb-4 flex-shrink-0">
+              <div className="flex justify-between items-center">
+                <h2 className="text-lg md:text-xl font-medium">Your Progress</h2>
+                <TimeFilterDropdown />
+              </div>
+            </div>
+            <div className="flex-1 scrollbar-hide overflow-y-auto overflow-x-hidden p-4 md:p-6 lg:p-8 pt-2">
+              <div className="flex flex-col gap-4 md:gap-6">
+                {updates.map((update, index) => (
+                  <ProgressItem
+                    key={index}
+                    date={new Date().toLocaleDateString()}
+                    description={update.progressText}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="flex-1 min-w-0">
+          <TeamProgress updates={updates} />
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <Router>
+      {user ? ( // Conditionally render based on user authentication
+        <div className="flex gap-4 bg-black text-white h-screen w-screen overflow-hidden font-inter p-4">
+          {/* Left Nav */}
+          <div className="flex flex-col flex-shrink-0">
+            <Link to="/" className="focus:outline-none h-20">
+              <div className="flex items-center ml-6 mt-2 mr-[130px] select-none">
+                <img src={glanceLogo} className="h-9 w-7 mr-3" alt="Logo" />
+                <h1 className="font-custom text-3xl">glance</h1>
+              </div>
+            </Link>
+
+            <TeamSelector />
+
+            {/* Navigation Items */}
+            <nav className="space-y-1 h-[calc(100vh-200px)] overflow-y-auto scrollbar-hide">
+              <div className="h-[1px] bg-[#1e1e1e] my-2"></div>
+              {navItems.map((item, index) => (
+                <div key={item.title} className="space-y-1">
+                  {item.subitems ? (
+                    <Collapsible.Root className="w-full">
+                      <Collapsible.Trigger className="w-full flex items-center justify-between py-2 pr-2 pl-6 rounded-lg hover:bg-zinc-800 group">
+                        <div className="flex items-center space-x-3">
+                          <span className="w-5">{item.icon}</span>
+                          <span className="text-sm">{item.title}</span>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-zinc-400 transition-transform duration-200 ease-in-out group-data-[state=open]:hidden" />
+                        <ChevronDown className="w-4 h-4 text-zinc-400 transition-transform duration-200 ease-in-out hidden group-data-[state=open]:block" />
+                      </Collapsible.Trigger>
+                      <Collapsible.Content>
+                        {item.subitems.map((subitem) => (
+                          <button
+                            key={subitem}
+                            className="w-full flex items-center space-x-3 p-2 pl-10 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-white"
+                          >
+                            <span className="text-sm">{subitem}</span>
+                          </button>
+                        ))}
+                      </Collapsible.Content>
+                    </Collapsible.Root>
+                  ) : (
+                    <Link
+                      to={item.path || "#"}
+                      className="w-full flex items-center space-x-3 py-2 pr-2 pl-6 rounded-lg hover:bg-zinc-800"
+                    >
+                      <span className="w-5">{item.icon}</span>
+                      <span className="text-sm">{item.title}</span>
+                    </Link>
+                  )}
+                  {index === 1 && (
+                    <div className="h-[1px] bg-[#1e1e1e] my-2"></div>
+                  )}
+                </div>
+              ))}
+            </nav>
+          </div>
+
+          {/* Right Side */}
+          <div className="flex-1 flex flex-col h-full min-w-0">
+            <div className="flex gap-4 h-14 mb-6 flex-shrink-0">
+              <DailyBrief className="flex-shrink-0" />
+              <div className="relative h-full flex-1 min-w-0">
+                <img
+                  src={searchIcon}
+                  className="absolute left-3 top-4 h-[22px] w-[22px]"
+                  alt="Search"
+                />
+                <input
+                  type="text"
+                  placeholder="Search in Project"
+                  className="bg-zinc-900 rounded-lg h-full w-full pl-10 pr-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-white"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <ProjectDetails className="flex-shrink-0" />
+              <StartButton
+                className="flex-shrink-0"
+                onSessionEnd={refreshScreenshots}
+              />
+              <ProfilePicture className="flex-shrink-0" />
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route
+                  path="/all-documentation"
+                  element={<AllDocumentation />}
+                />
+                <Route
+                  path="/new-documentation"
+                  element={<NewDocumentation />}
+                />
+                <Route path="*" element={<HomePage />} />
+              </Routes>
+            </div>
+          </div>
+        </div>
+      ) : (
+        // Render login/register when no user is authenticated
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="*" element={<Login />} /> {/* Redirect to login */}
+        </Routes>
+      )}
+    </Router>
+  );
+}
+
+function ProgressItem({ date, description }) {
+  return (
+    <div className="flex items-start gap-4">
+      <div className="px-3 py-1.5 bg-zinc-800 rounded-lg text-sm text-zinc-300 whitespace-nowrap">
+        {date}
+      </div>
+      <p className="text-base text-zinc-100 leading-relaxed">{description}</p>
+    </div>
+  );
+}
+
+export default App;
+</file>
+
+</files>
