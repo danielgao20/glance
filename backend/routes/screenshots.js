@@ -26,25 +26,12 @@ if (!mongoURI || !openaiAPIKey) {
 router.post("/generate-summary", async (req, res) => {
   try {
     const { progressUpdates } = req.body;
+    console.log("Received progress updates:", progressUpdates);
+    const { timeFilter, username } = req.query || {}; // Get timeFilter and username from query parameters
 
     const prompt = `
-      Given the progress updates from different team members,
-
-      Provide me a summary of the team progress in the following JSON structure:
-      [
-        {
-          "text": <PART OF PARAGRAPH THAT IS A GENERAL SENTENCE>,
-          "username": "GENERAL"
-        },
-        {
-          "text": <PART OF PARAGRAPH THAT IS A  SENTENCE ABOUT username's CONTRIBUTION>,
-          "username": <USERNAME OF WHO CONTRIBUTED>
-        },
-        {
-          "text": <PART OF PARAGRAPH THAT IS A  SENTENCE ABOUT username's CONTRIBUTION>,
-          "username": <USERNAME OF WHO CONTRIBUTED>
-        }
-      ]
+      Given the progress updates from ${username || 'a user'}, format a professional update summary that's optimized for sharing on Slack.
+      The timeframe is: ${timeFilter || 'recent updates'}. Use the first person perspective.
 
       <SAMPLE INPUT>
       Sample Input:
@@ -52,33 +39,17 @@ router.post("/generate-summary", async (req, res) => {
       David: integrating the stripe payment wall into the application on VScode
       David: Paying for an item in a stripe payment user interface
 
-      Alice: Working on figma prototyping landing page design
-      Alice: Creating the new logo for the landing page
-      Alice: Creating new frames for the different sub pages for the landing pages
-
-
       Sample Output:
-      [
-        {
-          "text": "Throughout the day, the team worked on the application, especially in the payments integration and new design for the landing page.",
-          "username": "GENERAL"
-        },
-        {
-          "text": "David worked on integrating the payment gateway into the website. He added a new page for the payment form and updated the backend to handle payment processing.",
-          "username": "David"
-        },
-        {
-          "text": "Alice completed the design for the landing page. She created a hero section with a call-to-action button and added testimonials from customers.",
-          "username": "Alice"
-        }
-      ] 
+          "For the past day, I've been focused on implementing our payment system. I built the Stripe dashboard and created the payment item creation flow. I completed the integration of the Stripe payment wall into our main application."
       </SAMPLE INPUT>
     `;
 
     const input = progressUpdates
       .map((update) => `${update.userName}: ${update.progressText}`)
       .join("\n");
-    console.log(input);
+      
+    console.log("Generating summary for input:", input);
+    
     const response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
@@ -87,7 +58,7 @@ router.post("/generate-summary", async (req, res) => {
           { role: "system", content: prompt },
           {
             role: "user",
-            content: `Progress of the team: ${input}`,
+            content: `Progress updates: ${input}`,
           },
         ],
         max_tokens: 500,
@@ -101,7 +72,7 @@ router.post("/generate-summary", async (req, res) => {
     );
 
     const summary = response.data.choices[0].message.content.trim();
-    console.log(summary);
+    console.log("Generated summary:", summary);
     res.json({ summary });
   } catch (error) {
     console.error("Error generating summary:", error);
@@ -121,6 +92,7 @@ router.post("/", upload.single("screenshot"), async (req, res) => {
 
     const filename = `${Date.now()}-${req.file.originalname}`;
     const filePath = path.resolve(req.file.path);
+    const timestamp = new Date().toISOString(); // Add timestamp
 
     // Perform OCR on the saved file
     console.log("Starting OCR process...");
@@ -143,7 +115,8 @@ router.post("/", upload.single("screenshot"), async (req, res) => {
         username: req.body.username,
         carouselText: descriptionObj.carouselText,
         progressText: descriptionObj.progressText,
-      }, // Include carousel and progress text in metadata
+        created_at: timestamp, // Include created_at timestamp in metadata
+      },
     });
 
     // Pipe the file to GridFS
@@ -162,6 +135,7 @@ router.post("/", upload.single("screenshot"), async (req, res) => {
           fileId: uploadStream.id,
           carouselText: descriptionObj.carouselText,
           progressText: descriptionObj.progressText,
+          created_at: timestamp, // Return the timestamp in response
         });
       });
   } catch (error) {
@@ -183,6 +157,7 @@ router.get("/", async (req, res) => {
         carouselText: file.metadata?.carouselText || "No description available",
         progressText: file.metadata?.progressText || "No description available",
         fileId: file._id,
+        created_at: file.metadata?.created_at || file.uploadDate.toISOString(), // Include timestamp
       }))
     );
   } catch (error) {
