@@ -119,13 +119,13 @@ const ProgressUpdate = ({ updates, username, timeFilter, resetUpdate }) => {
               <div className="whitespace-pre-line text-base text-zinc-300 leading-relaxed">
                 {summary}
               </div>
-              <div className="mt-4 flex justify-end">
-                {/* <button
+              <div className="mt-4 flex justify-center">
+                <button
                   onClick={copyToClipboard}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors text-align-center text-base"
                 >
                   Copy
-                </button> */}
+                </button>
               </div>
             </>
           ) : (

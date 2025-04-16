@@ -38,6 +38,7 @@ function App() {
 
   // Helper function: filter updates by selected time frame
   function filterUpdatesByTime(allUpdates, filter) {
+    if (filter === "All Time") return allUpdates;
     const now = new Date();
     return allUpdates.filter((update) => {
       const updateDate = new Date(update.timestamp);

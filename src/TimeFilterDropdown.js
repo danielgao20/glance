@@ -8,7 +8,7 @@ import {
 import { ChevronDown } from "lucide-react";
 
 export default function TimeFilterDropdown({ selected, onTimeChange }) {
-  const options = ["Today", "This Week", "This Month"];
+  const options = ["All Time", "Today", "This Week", "This Month"];
 
   return (
     <DropdownMenu>
