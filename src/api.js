@@ -10,13 +10,24 @@ export const fetchScreenshots = async () => {
   return response.json();
 };
 
-export const sendScreenshot = async (username, screenshotPath) => {
+export const deleteScreenshot = async (fileId) => {
+  const token = localStorage.getItem("token");
+  const response = await fetch(`http://localhost:5001/api/screenshots/${fileId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) {
+    throw new Error("Failed to delete screenshot");
+  }
+  return response.json();
+};
+
+export const sendScreenshot = async (screenshotPath) => {
   const formData = new FormData();
   const token = localStorage.getItem("token");
 
   try {
     const fileData = await window.electronAPI.fs.readFile(screenshotPath);
-    formData.append("username", username);
     formData.append("screenshot", new Blob([fileData], { type: "image/jpeg" }));
 
     const response = await fetch("http://localhost:5001/api/screenshots", {

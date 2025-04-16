@@ -4,15 +4,16 @@ import React, { useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import VisualProgressUpdate from "./VisualProgressUpdate";
 
-const ProgressUpdatesScroll = ({ updates }) => {
+const ProgressUpdatesScroll = ({ updates, onDelete }) => {
   const scrollContainerRef = useRef(null);
 
   const scroll = (direction) => {
     const container = scrollContainerRef.current;
     if (container) {
       const scrollAmount = container.clientWidth * 0.8;
-      container.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
+      const currentScroll = container.scrollLeft;
+      container.scrollTo({
+        left: direction === "left" ? currentScroll - scrollAmount : currentScroll + scrollAmount,
         behavior: "smooth",
       });
     }
@@ -30,25 +31,15 @@ const ProgressUpdatesScroll = ({ updates }) => {
       <div className="relative">
         <div
           ref={scrollContainerRef}
-          className="flex w-full min-h-[300px] overflow-x-auto rounded-lg bg-zinc-900 border-2 border-[#414344] scrollbar-hide snap-x snap-mandatory"
+          className="flex w-full min-h-[300px] overflow-x-auto rounded-lg bg-zinc-900 border-2 border-[#414344] scrollbar-hide"
           style={{ scrollBehavior: "smooth" }}
         >
           {updates.map((update, index) => (
-            <div key={index} className="flex-none w-112 snap-start px-0">
-              <VisualProgressUpdate {...update} />
+            <div key={index} className="flex-none w-112 snap-center px-4">
+              <VisualProgressUpdate {...update} fileId={update.fileId} onDelete={onDelete} />
             </div>
           ))}
-          <div className="flex-none w-20" aria-hidden="true" />
         </div>
-
-        {/* Gradient overlay */}
-        <div
-          className="absolute top-0 right-0 bottom-0 w-40 pointer-events-none rounded-lg"
-          style={{
-            background:
-              "linear-gradient(to right, rgba(24, 24, 27, 0) 0%, rgb(24, 24, 27) 60%)",
-          }}
-        />
       </div>
 
       <button

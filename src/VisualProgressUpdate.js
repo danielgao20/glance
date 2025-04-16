@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { Dialog, DialogContent } from "./components/ui/dialog";
-import { X } from "lucide-react";
+import { X, Trash2 } from "lucide-react";
 
 export default function VisualProgressUpdate({
   userName = "Daniel Gao",
   userAvatar = "/placeholder.svg?height=48&width=48",
   carouselText = "Bugs Resolved",
   screenshot = "/placeholder.svg?height=600&width=800",
+  fileId,
+  onDelete,
 }) {
   const [isImageExpanded, setIsImageExpanded] = useState(false);
 
@@ -44,14 +46,12 @@ export default function VisualProgressUpdate({
           </div>
 
           {/* Screenshot */}
-          <div
-            className="relative rounded-lg overflow-hidden border-2 border-[#414344] cursor-pointer transition-transform hover:scale-[1.02]"
-            onClick={() => setIsImageExpanded(true)}
-          >
+          <div className="relative rounded-lg overflow-hidden border-2 border-[#414344]">
             <img
               src={screenshot}
               alt={`Screenshot for ${carouselText}`}
-              className="w-full h-48 object-cover"
+              className="w-full h-48 object-cover cursor-pointer"
+              onClick={() => setIsImageExpanded(true)}
             />
           </div>
         </div>
@@ -59,19 +59,32 @@ export default function VisualProgressUpdate({
       <Dialog open={isImageExpanded} onOpenChange={setIsImageExpanded}>
         <DialogContent className="max-w-[95vw] lg:max-w-[1200px] p-6 bg-zinc-900 border border-zinc-800">
           <div className="space-y-4">
-            {/* Header with close button */}
-            <div className="flex justify-between items-center">
+            {/* Header with debug info */}
+            <div className="flex justify-between items-center gap-2">
               <h3 className="text-lg font-semibold text-white">{carouselText}</h3>
-              <button
-                onClick={() => setIsImageExpanded(false)}
-                className="p-2 rounded-full hover:bg-zinc-800 transition-colors"
-              >
-                <X className="h-5 w-5" />
-              </button>
+
+              <div className="flex gap-2 items-center ml-auto">
+                {fileId && onDelete && (
+                  <button
+                    className="p-2 rounded-full bg-zinc-900/80 hover:bg-red-600 hover:text-white transition-colors shadow-lg z-50"
+                    title="Delete screenshot"
+                    style={{ boxShadow: '0 4px 24px 0 rgba(0,0,0,0.3)' }}
+                    onClick={() => { setIsImageExpanded(false); onDelete(fileId); }}
+                  >
+                    <Trash2 className="h-5 w-5 text-white" />
+                  </button>
+                )}
+                <button
+                  onClick={() => setIsImageExpanded(false)}
+                  className="p-2 rounded-full hover:bg-zinc-800 transition-colors"
+                >
+                  <X className="h-5 w-5 text-white" />
+                </button>
+              </div>
             </div>
 
             {/* Image */}
-            <div className="rounded-lg overflow-hidden">
+            <div className="relative rounded-lg overflow-hidden">
               <img
                 src={screenshot}
                 alt={`Screenshot for ${carouselText}`}

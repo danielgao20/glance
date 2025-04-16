@@ -18,7 +18,7 @@ import NewDocumentation from "./components/NewDocumentation";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import AuthContext from "./context/AuthContext";
-import { fetchScreenshots } from "./api";
+import { fetchScreenshots, deleteScreenshot } from "./api";
 import ellipse1 from "./img/ellipse1.svg";
 import ellipse2 from "./img/ellipse2.svg";
 import ellipse3 from "./img/ellipse3.svg";
@@ -33,26 +33,40 @@ function App() {
   const [updates, setUpdates] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const refreshScreenshots = async () => {
-    if (user) {
-      try {
-        const screenshots = await fetchScreenshots();
-        setUpdates(
-          screenshots
-            .map((screenshot) => ({
-              userName: screenshot.username,
-              userAvatar: dgaoPfp,
-              carouselText: screenshot.carouselText,
-              progressText: screenshot.progressText,
-              screenshot: `http://localhost:5001/api/screenshots/image/${screenshot.fileId}`,
-            }))
-            .reverse()
-        );
-      } catch (error) {
-        console.error("Error fetching screenshots:", error);
-      }
+  function areScreenshotArraysEqual(arr1, arr2) {
+  if (arr1.length !== arr2.length) return false;
+  for (let i = 0; i < arr1.length; i++) {
+    if (arr1[i].fileId !== arr2[i].fileId) return false;
+  }
+  return true;
+}
+
+const refreshScreenshots = async () => {
+  if (user) {
+    try {
+      const screenshots = await fetchScreenshots();
+      const newUpdates = screenshots
+        .map((screenshot) => ({
+          userName: screenshot.username,
+          userAvatar: dgaoPfp,
+          carouselText: screenshot.carouselText,
+          progressText: screenshot.progressText,
+          fileId: screenshot.fileId,
+          screenshot: `http://localhost:5001/api/screenshots/image/${screenshot.fileId}`,
+        }))
+        .reverse();
+
+      setUpdates(prevUpdates => {
+        if (areScreenshotArraysEqual(newUpdates, prevUpdates)) {
+          return prevUpdates; // No change, do not rerender
+        }
+        return newUpdates; // Only update if different
+      });
+    } catch (error) {
+      console.error("Error fetching screenshots:", error);
     }
-  };
+  }
+};  
 
   const navItems = [
     {
@@ -102,54 +116,77 @@ function App() {
   ];
 
   useEffect(() => {
-    const loadScreenshots = async () => {
-      if (user) {
-        try {
-          const screenshots = await fetchScreenshots();
-          setUpdates(
-            screenshots
-              .map((screenshot) => ({
-                userName: screenshot.username,
-                userAvatar: dgaoPfp,
-                carouselText: screenshot.carouselText,
-                progressText: screenshot.progressText,
-                screenshot: `http://localhost:5001/api/screenshots/image/${screenshot.fileId}`,
-              }))
-              .reverse()
-          );
-        } catch (error) {
-          console.error("Error fetching screenshots:", error);
-        }
+    let interval = null;
+
+    const poll = async () => {
+      await refreshScreenshots();
+    };
+
+    const startPolling = () => {
+      if (!interval) {
+        poll(); // Initial load
+        interval = setInterval(poll, 5000);
       }
     };
 
-    // Initial load
-    loadScreenshots();
+    const stopPolling = () => {
+      if (interval) {
+        clearInterval(interval);
+        interval = null;
+      }
+    };
 
-    // Set up interval
-    const interval = setInterval(loadScreenshots, 5000);
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        startPolling();
+      } else {
+        stopPolling();
+      }
+    };
 
-    // Cleanup interval on component unmount
-    return () => clearInterval(interval);
-  }, [user]); // Include user in dependencies
+    document.addEventListener("visibilitychange", handleVisibility);
+    if (document.visibilityState === "visible") {
+      startPolling();
+    }
+
+    return () => {
+      stopPolling();
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [user]);
+
+  // Delete handler
+  const handleDeleteScreenshot = async (fileId) => {
+    try {
+      await deleteScreenshot(fileId);
+      setUpdates(prev => prev.filter(update => update.fileId !== fileId));
+    } catch (error) {
+      alert("Failed to delete screenshot");
+    }
+  };
 
   const HomePage = () => (
     <div className="w-full h-full flex flex-col overflow-hidden">
-      {/* Carousel section */}
-      <div className="flex-[2_2_0%] max-w-full overflow-hidden">
-        <ProgressUpdatesCarousel updates={updates} />
+      {/* Carousel section - more responsive height */}
+      <div className="flex-2 min-h-0 max-h-[55%] max-w-full overflow-hidden">
+        <ProgressUpdatesCarousel updates={updates} onDelete={handleDeleteScreenshot} />
       </div>
-      <div className="mt-2 flex-[2.6_2.6_0%] flex gap-4 min-h-0">
+      
+      {/* Spacer with consistent height */}
+      <div className="h-4"></div>
+      
+      {/* Progress boxes section - more responsive height */}
+      <div className="flex-[2] min-h-0 flex gap-4">
         <div className="flex-1 min-w-0">
           <div className="w-full h-full flex flex-col bg-zinc-900 rounded-lg border-2 border-[#414344] overflow-hidden">
-            <div className="p-8 pb-4 flex-shrink-0">
+            <div className="p-4 md:p-6 lg:p-8 pb-2 md:pb-3 lg:pb-4 flex-shrink-0">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-medium">Your Progress</h2>
+                <h2 className="text-lg md:text-xl font-medium">Your Progress</h2>
                 <TimeFilterDropdown />
               </div>
             </div>
-            <div className="flex-1 scrollbar-hide overflow-y-auto overflow-x-hidden p-8 pt-2">
-              <div className="flex flex-col gap-6">
+            <div className="flex-1 scrollbar-hide overflow-y-auto overflow-x-hidden p-4 md:p-6 lg:p-8 pt-2">
+              <div className="flex flex-col gap-4 md:gap-6">
                 {updates.map((update, index) => (
                   <ProgressItem
                     key={index}
@@ -162,7 +199,6 @@ function App() {
           </div>
         </div>
         <div className="flex-1 min-w-0">
-          {/* Set height to 100% instead of 50vh */}
           <TeamProgress updates={updates} />
         </div>
       </div>

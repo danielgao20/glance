@@ -9,6 +9,7 @@ const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 
 dotenv.config();
+const auth = require('../middleware/auth');
 const router = express.Router();
 const upload = multer({ dest: "temp/" }); // Temporary storage for incoming files
 
@@ -110,7 +111,7 @@ router.post("/generate-summary", async (req, res) => {
 });
 
 // POST route for saving screenshots
-router.post("/", upload.single("screenshot"), async (req, res) => {
+router.post("/", auth, upload.single("screenshot"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
@@ -158,7 +159,7 @@ router.post("/", upload.single("screenshot"), async (req, res) => {
         fs.unlinkSync(filePath);
 
         res.status(201).json({
-          username: req.body.username,
+          username: req.user.username,
           fileId: uploadStream.id,
           carouselText: descriptionObj.carouselText,
           progressText: descriptionObj.progressText,
@@ -171,12 +172,12 @@ router.post("/", upload.single("screenshot"), async (req, res) => {
 });
 
 // GET route for fetching screenshots metadata
-router.get("/", async (req, res) => {
+router.get("/", auth, async (req, res) => {
   try {
     const conn = mongoose.connection;
     const gfs = new GridFSBucket(conn.db, { bucketName: "screenshots" });
 
-    const files = await gfs.find().toArray();
+    const files = await gfs.find({ 'metadata.username': req.user.username }).toArray();
     res.status(200).json(
       files.map((file) => ({
         username: file.metadata?.username || "Unknown",
@@ -245,5 +246,31 @@ async function generateDescription(extractedText) {
     return "Description generation failed.";
   }
 }
+
+// DELETE route for deleting a screenshot by fileId
+router.delete('/:id', auth, async (req, res) => {
+  try {
+    const fileId = req.params.id;
+    const conn = mongoose.connection;
+    const gfs = new GridFSBucket(conn.db, { bucketName: 'screenshots' });
+    const objectId = new mongoose.Types.ObjectId(fileId);
+
+    // Delete file from GridFS
+    await gfs.delete(objectId);
+
+    // Remove associated Screenshot document if it exists
+    try {
+      const Screenshot = require('../models/Screenshot');
+      await Screenshot.deleteOne({ fileId: objectId });
+    } catch (err) {
+      // If Screenshot model or document doesn't exist, ignore
+    }
+
+    res.status(200).json({ message: 'Screenshot deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting screenshot:', error.message);
+    res.status(500).json({ error: 'Failed to delete screenshot' });
+  }
+});
 
 module.exports = router;
