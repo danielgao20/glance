@@ -392,7 +392,7 @@ function ProgressItem({ timestamp, description }) {
       <div className="px-3 py-1.5 bg-zinc-800 rounded-lg text-sm text-zinc-300 whitespace-nowrap">
         {formatTimestamp(timestamp)}
       </div>
-      <p className="text-base text-zinc-100 leading-relaxed">{description}</p>
+      <p className="text-base text-zinc-300 leading-relaxed">{description}</p>
     </div>
   );
 }
