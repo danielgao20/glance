@@ -184,6 +184,8 @@ router.get("/", auth, async (req, res) => {
         carouselText: file.metadata?.carouselText || "No description available",
         progressText: file.metadata?.progressText || "No description available",
         fileId: file._id,
+        // Include the timestamp (uploadDate from GridFS or use metadata.created_at if available)
+        timestamp: file.metadata?.created_at || file.uploadDate.toISOString(),
       }))
     );
   } catch (error) {

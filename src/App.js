@@ -58,9 +58,11 @@ function App() {
             progressText: screenshot.progressText,
             fileId: screenshot.fileId,
             screenshot: `http://localhost:5001/api/screenshots/image/${screenshot.fileId}`,
+            // Include the timestamp from the screenshot data
+            timestamp: screenshot.timestamp || new Date().toISOString()
           }))
           .reverse();
-
+  
         setUpdates(prevUpdates => {
           if (areScreenshotArraysEqual(newUpdates, prevUpdates)) {
             return prevUpdates; // No change, do not rerender
@@ -71,7 +73,7 @@ function App() {
         console.error("Error fetching screenshots:", error);
       }
     }
-  };  
+  };
 
   const navItems = [
     {
@@ -185,6 +187,39 @@ function App() {
     );
   }
 
+  const YourProgress = ({ updates }) => {
+    // Sort updates by timestamp (newest first)
+    const sortedUpdates = [...updates].sort((a, b) => {
+      return new Date(b.timestamp || 0) - new Date(a.timestamp || 0);
+    });
+  
+    return (
+      <div className="w-full h-full flex flex-col bg-zinc-900 rounded-lg border-2 border-[#414344] overflow-hidden">
+        <div className="p-8 pb-4 flex-shrink-0">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-medium">Your Progress</h2>
+            <TimeFilterDropdown />
+          </div>
+        </div>
+        <div className="flex-1 scrollbar-hide overflow-y-auto overflow-x-hidden p-8 pt-2">
+          <div className="flex flex-col gap-4">
+            {sortedUpdates.length > 0 ? (
+              sortedUpdates.map((update, index) => (
+                <ProgressItem
+                  key={index}
+                  timestamp={update.timestamp || update.created_at || new Date().toISOString()}
+                  description={update.progressText}
+                />
+              ))
+            ) : (
+              <p className="text-zinc-500">No progress updates yet.</p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const HomePage = () => (
     <div className="w-full h-full flex flex-col overflow-hidden">
       {/* Carousel section - more responsive height */}
@@ -198,12 +233,7 @@ function App() {
       {/* Progress boxes section - more responsive height */}
       <div className="flex-[2] min-h-0 flex gap-4">
         <div className="flex-1 min-w-0">
-          <ProgressUpdate 
-            updates={updates} 
-            username={profile?.displayName || user} 
-            timeFilter={timeFilter}
-            resetUpdate={resetUpdate}
-          />
+          <YourProgress updates={updates} />
         </div>
         <div className="flex-1 min-w-0">
           <TeamProgress updates={updates} />
@@ -323,11 +353,31 @@ function App() {
   );
 }
 
-function ProgressItem({ date, description }) {
+function ProgressItem({ timestamp, description }) {
+  // Format the timestamp to "12:23PM 4/16" format
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp) return "";
+    
+    const date = new Date(timestamp);
+    
+    // Format time (12:23PM)
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const formattedHours = hours % 12 || 12; // Convert to 12-hour format
+    const formattedMinutes = minutes.toString().padStart(2, '0');
+    
+    // Format date (4/16)
+    const month = date.getMonth() + 1; // getMonth() is zero-based
+    const day = date.getDate();
+    
+    return `${formattedHours}:${formattedMinutes}${ampm} ${month}/${day}`;
+  };
+
   return (
     <div className="flex items-start gap-4">
       <div className="px-3 py-1.5 bg-zinc-800 rounded-lg text-sm text-zinc-300 whitespace-nowrap">
-        {date}
+        {formatTimestamp(timestamp)}
       </div>
       <p className="text-base text-zinc-100 leading-relaxed">{description}</p>
     </div>
