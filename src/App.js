@@ -26,7 +26,7 @@ import ellipse4 from "./img/ellipse4.svg";
 import ellipse5 from "./img/ellipse5.svg";
 import ellipse6 from "./img/ellipse6.svg";
 import ProfilePicture from "./components/ProfilePicture";
-import TeamProgress from "./TeamProgress";
+import TeamProgress from "./TeamProgress"; // (Unused in this version)
 import ProgressUpdate from "./ProgressUpdate";
 
 function App() {
@@ -36,6 +36,34 @@ function App() {
   const [resetUpdate, setResetUpdate] = useState(false);
   const [timeFilter, setTimeFilter] = useState("This Week");
 
+  // Helper function: filter updates by selected time frame
+  function filterUpdatesByTime(allUpdates, filter) {
+    const now = new Date();
+    return allUpdates.filter((update) => {
+      const updateDate = new Date(update.timestamp);
+      if (filter === "Today") {
+        return updateDate.toDateString() === now.toDateString();
+      } else if (filter === "This Week") {
+        // Assume week starts on Sunday
+        const firstDayOfWeek = new Date(now);
+        firstDayOfWeek.setDate(now.getDate() - now.getDay());
+        const lastDayOfWeek = new Date(firstDayOfWeek);
+        lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 6);
+        return updateDate >= firstDayOfWeek && updateDate <= lastDayOfWeek;
+      } else if (filter === "This Month") {
+        return (
+          updateDate.getMonth() === now.getMonth() &&
+          updateDate.getFullYear() === now.getFullYear()
+        );
+      }
+      return true;
+    });
+  }
+
+  // Compute filtered updates based on the timeFilter state
+  const filteredUpdates = filterUpdatesByTime(updates, timeFilter);
+
+  // Helper function to compare screenshot arrays
   function areScreenshotArraysEqual(arr1, arr2) {
     if (arr1.length !== arr2.length) return false;
     for (let i = 0; i < arr1.length; i++) {
@@ -51,17 +79,19 @@ function App() {
         const newUpdates = screenshots
           .map((screenshot) => ({
             userName: screenshot.username,
-            userAvatar: profile?.profileImage 
-              ? `http://localhost:5001${profile.profileImage}` 
+            userAvatar: profile?.profileImage
+              ? `http://localhost:5001${profile.profileImage}`
               : dgaoPfp,
             carouselText: screenshot.carouselText,
             progressText: screenshot.progressText,
             fileId: screenshot.fileId,
             screenshot: `http://localhost:5001/api/screenshots/image/${screenshot.fileId}`,
+            // Include the timestamp from the screenshot data
+            timestamp: screenshot.timestamp || new Date().toISOString(),
           }))
           .reverse();
 
-        setUpdates(prevUpdates => {
+        setUpdates((prevUpdates) => {
           if (areScreenshotArraysEqual(newUpdates, prevUpdates)) {
             return prevUpdates; // No change, do not rerender
           }
@@ -71,7 +101,7 @@ function App() {
         console.error("Error fetching screenshots:", error);
       }
     }
-  };  
+  };
 
   const navItems = [
     {
@@ -167,11 +197,11 @@ function App() {
     setTimeout(() => setResetUpdate(false), 100);
   };
 
-  // Delete handler
+  // Delete handler for a screenshot update
   const handleDeleteScreenshot = async (fileId) => {
     try {
       await deleteScreenshot(fileId);
-      setUpdates(prev => prev.filter(update => update.fileId !== fileId));
+      setUpdates((prev) => prev.filter((update) => update.fileId !== fileId));
     } catch (error) {
       alert("Failed to delete screenshot");
     }
@@ -185,28 +215,61 @@ function App() {
     );
   }
 
+  const YourProgress = ({ updates }) => {
+    // Sort updates by timestamp (newest first)
+    const sortedUpdates = [...updates].sort((a, b) => {
+      return new Date(b.timestamp || 0) - new Date(a.timestamp || 0);
+    });
+  
+    return (
+      <div className="w-full h-full flex flex-col bg-zinc-900 rounded-lg border-2 border-[#414344] overflow-hidden">
+        <div className="p-8 pb-4 flex-shrink-0">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-medium">Your Progress</h2>
+            <TimeFilterDropdown selected={timeFilter} onTimeChange={handleTimeFilterChange} />
+          </div>
+        </div>
+        <div className="flex-1 scrollbar-hide overflow-y-auto overflow-x-hidden p-8 pt-2">
+          <div className="flex flex-col gap-4">
+            {sortedUpdates.length > 0 ? (
+              sortedUpdates.map((update, index) => (
+                <ProgressItem
+                  key={index}
+                  timestamp={update.timestamp || update.created_at || new Date().toISOString()}
+                  description={update.progressText}
+                />
+              ))
+            ) : (
+              <p className="text-zinc-500">No progress updates yet.</p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const HomePage = () => (
     <div className="w-full h-full flex flex-col overflow-hidden">
-      {/* Carousel section - more responsive height */}
+      {/* Carousel section */}
       <div className="flex-2 min-h-0 max-h-[55%] max-w-full overflow-hidden">
         <ProgressUpdatesCarousel updates={updates} onDelete={handleDeleteScreenshot} />
       </div>
       
-      {/* Spacer with consistent height */}
+      {/* Spacer */}
       <div className="h-4"></div>
       
-      {/* Progress boxes section - more responsive height */}
+      {/* Two-column layout: Your Progress and Slack-ready Progress Update */}
       <div className="flex-[2] min-h-0 flex gap-4">
         <div className="flex-1 min-w-0">
-          <ProgressUpdate 
-            updates={updates} 
-            username={profile?.displayName || user} 
-            timeFilter={timeFilter}
-            resetUpdate={resetUpdate}
-          />
+          <YourProgress updates={filteredUpdates} />
         </div>
         <div className="flex-1 min-w-0">
-          <TeamProgress updates={updates} />
+          <ProgressUpdate
+            updates={filteredUpdates}
+            timeFilter={timeFilter}
+            resetUpdate={resetUpdate}
+            onTimeChange={handleTimeFilterChange}
+          />
         </div>
       </div>
     </div>
@@ -214,9 +277,9 @@ function App() {
 
   return (
     <Router>
-      {user ? ( // Conditionally render based on user authentication
+      {user ? (
         <div className="flex gap-4 bg-black text-white h-screen w-screen overflow-hidden font-inter p-4">
-          {/* Left Nav */}
+          {/* Left Navigation */}
           <div className="flex flex-col flex-shrink-0">
             <Link to="/" className="focus:outline-none h-20">
               <div className="flex items-center ml-6 mt-2 mr-[130px] select-none">
@@ -224,10 +287,7 @@ function App() {
                 <h1 className="font-custom text-3xl">glance</h1>
               </div>
             </Link>
-
             <TeamSelector />
-
-            {/* Navigation Items */}
             <nav className="space-y-1 h-[calc(100vh-200px)] overflow-y-auto scrollbar-hide">
               <div className="h-[1px] bg-[#1e1e1e] my-2"></div>
               {navItems.map((item, index) => (
@@ -289,47 +349,50 @@ function App() {
                 />
               </div>
               <ProjectDetails className="flex-shrink-0" />
-              <StartButton
-                className="flex-shrink-0"
-                onSessionEnd={refreshScreenshots}
-              />
+              <StartButton onSessionEnd={refreshScreenshots} />
               <ProfilePicture className="flex-shrink-0" />
             </div>
             <div className="flex-1 overflow-hidden">
               <Routes>
                 <Route path="/" element={<HomePage />} />
-                <Route
-                  path="/all-documentation"
-                  element={<AllDocumentation />}
-                />
-                <Route
-                  path="/new-documentation"
-                  element={<NewDocumentation />}
-                />
+                <Route path="/all-documentation" element={<AllDocumentation />} />
+                <Route path="/new-documentation" element={<NewDocumentation />} />
                 <Route path="*" element={<HomePage />} />
               </Routes>
             </div>
           </div>
         </div>
       ) : (
-        // Render login/register when no user is authenticated
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="*" element={<Login />} /> {/* Redirect to login */}
+          <Route path="*" element={<Login />} />
         </Routes>
       )}
     </Router>
   );
 }
 
-function ProgressItem({ date, description }) {
+function ProgressItem({ timestamp, description }) {
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp) return "";
+    const date = new Date(timestamp);
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? "PM" : "AM";
+    const formattedHours = hours % 12 || 12;
+    const formattedMinutes = minutes.toString().padStart(2, "0");
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${formattedHours}:${formattedMinutes}${ampm} ${month}/${day}`;
+  };
+
   return (
     <div className="flex items-start gap-4">
       <div className="px-3 py-1.5 bg-zinc-800 rounded-lg text-sm text-zinc-300 whitespace-nowrap">
-        {date}
+        {formatTimestamp(timestamp)}
       </div>
-      <p className="text-base text-zinc-100 leading-relaxed">{description}</p>
+      <p className="text-base text-zinc-300 leading-relaxed">{description}</p>
     </div>
   );
 }

@@ -29,51 +29,23 @@ router.post("/generate-summary", async (req, res) => {
     const { progressUpdates } = req.body;
 
     const prompt = `
-      Given the progress updates from different team members,
+    You are writing a Slack update to summarize a team member's progress based on raw input logs.
 
-      Provide me a summary of the team progress in the following JSON structure:
-      [
-        {
-          "text": <PART OF PARAGRAPH THAT IS A GENERAL SENTENCE>,
-          "username": "GENERAL"
-        },
-        {
-          "text": <PART OF PARAGRAPH THAT IS A  SENTENCE ABOUT username's CONTRIBUTION>,
-          "username": <USERNAME OF WHO CONTRIBUTED>
-        },
-        {
-          "text": <PART OF PARAGRAPH THAT IS A  SENTENCE ABOUT username's CONTRIBUTION>,
-          "username": <USERNAME OF WHO CONTRIBUTED>
-        }
-      ]
+    Instructions:
+    - Read the user’s progress updates.
+    - Summarize their work using clear, concise first-person language ("I" statements).
+    - The output should be 3–5 sentences, suitable to post as a quick daily update in a team Slack channel.
+    - Focus on what was done, what’s in progress, and any key outcomes or blockers (if mentioned).
+    - Group related tasks into one sentence where possible for brevity and clarity.
 
-      <SAMPLE INPUT>
-      Sample Input:
-      David: working on stripe dashboard and creating a new item
-      David: integrating the stripe payment wall into the application on VScode
-      David: Paying for an item in a stripe payment user interface
+    <SAMPLE INPUT>
+    David: working on Stripe dashboard and creating a new item
+    David: integrating the Stripe payment wall into the application on VSCode
+    David: paying for an item in a Stripe payment user interface
 
-      Alice: Working on figma prototyping landing page design
-      Alice: Creating the new logo for the landing page
-      Alice: Creating new frames for the different sub pages for the landing pages
-
-
-      Sample Output:
-      [
-        {
-          "text": "Throughout the day, the team worked on the application, especially in the payments integration and new design for the landing page.",
-          "username": "GENERAL"
-        },
-        {
-          "text": "David worked on integrating the payment gateway into the website. He added a new page for the payment form and updated the backend to handle payment processing.",
-          "username": "David"
-        },
-        {
-          "text": "Alice completed the design for the landing page. She created a hero section with a call-to-action button and added testimonials from customers.",
-          "username": "Alice"
-        }
-      ] 
-      </SAMPLE INPUT>
+    <SAMPLE OUTPUT>
+    Today I worked on integrating Stripe payments into the app. I created a new dashboard item, set up the payment wall, and tested the user interface for purchasing items. Everything is wired up and ready for backend validation.
+    </SAMPLE OUTPUT>
     `;
 
     const input = progressUpdates
@@ -184,6 +156,8 @@ router.get("/", auth, async (req, res) => {
         carouselText: file.metadata?.carouselText || "No description available",
         progressText: file.metadata?.progressText || "No description available",
         fileId: file._id,
+        // Include the timestamp (uploadDate from GridFS or use metadata.created_at if available)
+        timestamp: file.metadata?.created_at || file.uploadDate.toISOString(),
       }))
     );
   } catch (error) {

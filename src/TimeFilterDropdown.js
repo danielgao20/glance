@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useState } from "react";
+import React from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,14 +7,8 @@ import {
 } from "./components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
 
-export default function TimeFilterDropdown() {
-  const [selected, setSelected] = useState("This Week");
-
+export default function TimeFilterDropdown({ selected, onTimeChange }) {
   const options = ["Today", "This Week", "This Month"];
-
-  const handleTimeChange = (option) => {
-    setSelected(option);
-  };
 
   return (
     <DropdownMenu>
@@ -37,11 +29,9 @@ export default function TimeFilterDropdown() {
           <DropdownMenuItem
             key={option}
             className="px-3 py-1.5 hover:bg-zinc-700 focus:bg-zinc-700 cursor-pointer transition-colors duration-150"
-            onClick={() => handleTimeChange(option)}
+            onClick={() => onTimeChange(option)}
           >
-            <span
-              className={`text-sm ${option === selected ? "font-medium" : ""}`}
-            >
+            <span className={`text-sm ${option === selected ? "font-medium" : ""}`}>
               {option}
             </span>
           </DropdownMenuItem>

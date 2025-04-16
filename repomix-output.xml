@@ -53,6 +53,7 @@ backend/
     User.js
   routes/
     auth.js
+    profile.js
     screenshots.js
   temp/
     627aa30b102ff0d241d1bf7bc62b0825
@@ -138,308 +139,6 @@ tailwind.config.js
 <files>
 This section contains the contents of the repository's files.
 
-<file path="src/components/ProfileEditModal.js">
-import React, { useState, useRef } from "react";
-import { Dialog, DialogContent } from "./ui/dialog";
-import { X, Upload, Camera } from "lucide-react";
-
-const ProfileEditModal = ({ isOpen, onClose, onSave, currentUser }) => {
-  const [displayName, setDisplayName] = useState(currentUser?.displayName || "");
-  const [profileImage, setProfileImage] = useState(currentUser?.profileImage || null);
-  const [previewUrl, setPreviewUrl] = useState(currentUser?.profileImage || null);
-  const fileInputRef = useRef(null);
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileImage(file);
-        setPreviewUrl(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const triggerFileInput = () => {
-    fileInputRef.current.click();
-  };
-
-  const handleSave = () => {
-    onSave({
-      displayName,
-      profileImage,
-      previewUrl
-    });
-    onClose();
-  };
-
-  const handleCancel = () => {
-    // Reset form and close
-    setDisplayName(currentUser?.displayName || "");
-    setProfileImage(currentUser?.profileImage || null);
-    setPreviewUrl(currentUser?.profileImage || null);
-    onClose();
-  };
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-zinc-900 border border-zinc-800 w-full max-w-md">
-        <div className="p-6 space-y-6">
-          <div className="flex justify-between items-center">
-            <h3 className="text-xl font-semibold text-white">Edit Profile</h3>
-            <button
-              onClick={handleCancel}
-              className="p-2 rounded-full hover:bg-zinc-800 transition-colors"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-
-          {/* Profile Picture */}
-          <div className="flex flex-col items-center space-y-4">
-            <div className="relative">
-              <div className="w-24 h-24 rounded-full bg-zinc-800 overflow-hidden">
-                {previewUrl ? (
-                  <img 
-                    src={previewUrl} 
-                    alt="Profile" 
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-zinc-400">
-                    <Camera className="w-8 h-8" />
-                  </div>
-                )}
-              </div>
-              <button 
-                onClick={triggerFileInput}
-                className="absolute bottom-0 right-0 p-1.5 bg-emerald-500 rounded-full text-white hover:bg-emerald-600 transition-colors"
-              >
-                <Upload className="w-4 h-4" />
-              </button>
-              <input 
-                type="file" 
-                ref={fileInputRef}
-                onChange={handleImageChange}
-                accept="image/*"
-                className="hidden"
-              />
-            </div>
-            <p className="text-sm text-zinc-400">
-              Click the icon to upload a new profile picture
-            </p>
-          </div>
-
-          {/* Display Name */}
-          <div className="space-y-2">
-            <label htmlFor="displayName" className="block text-sm font-medium text-zinc-300">
-              Display Name
-            </label>
-            <input
-              type="text"
-              id="displayName"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              placeholder="Your display name"
-            />
-          </div>
-
-          {/* Save/Cancel Buttons */}
-          <div className="flex space-x-3 pt-4">
-            <button
-              onClick={handleCancel}
-              className="flex-1 px-4 py-2 bg-zinc-800 text-white rounded-md hover:bg-zinc-700 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSave}
-              className="flex-1 px-4 py-2 bg-emerald-500 text-white rounded-md hover:bg-emerald-600 transition-colors"
-              disabled={!displayName.trim()}
-            >
-              Save Changes
-            </button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
-export default ProfileEditModal;
-</file>
-
-<file path="src/ProgressUpdate.js">
-import React, { useState, useEffect, useRef } from "react";
-
-const ProgressUpdate = ({ updates, username, timeFilter, resetUpdate }) => {
-  const [summary, setSummary] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  
-  // Use a ref to track if we should reset the summary
-  const shouldResetRef = useRef(false);
-  
-  // Only reset summary when resetUpdate changes from false to true
-  // useEffect(() => {
-  //   if (resetUpdate) {
-  //     shouldResetRef.current = true;
-  //   }
-  // }, [resetUpdate]);
-  
-  // Apply the reset when needed, but only once
-  useEffect(() => {
-    if (shouldResetRef.current) {
-      setSummary("");
-      shouldResetRef.current = false;
-    }
-  }, [timeFilter]);
-
-  const generateSummary = async () => {
-    setIsLoading(true);
-    
-    if (updates.length === 0) {
-      setSummary("No updates available for the selected time period.");
-      setIsLoading(false);
-      return;
-    }
-    
-    try {
-      console.log("Generating summary for updates:", updates);
-      const response = await fetch(
-        "http://localhost:5001/api/screenshots/generate-summary",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ progressUpdates: updates }),
-        }
-      );
-
-      if (!response.ok) throw new Error("Network response was not ok");
-      const data = await response.json();
-      console.log("Summary response data:", data);
-      
-      // Store the raw summary directly without parsing or formatting
-      if (data && data.summary) {
-        setSummary(data.summary);
-        console.log("Setting summary to:", data.summary);
-      } else {
-        setSummary("No summary could be generated.");
-        console.warn("No summary data received from API");
-      }
-    } catch (error) {
-      console.error("Error generating summary:", error);
-      setSummary("Error generating summary. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Copy to clipboard function
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(summary).then(
-      () => {
-        alert("Summary copied to clipboard!");
-      },
-      (err) => {
-        console.error("Could not copy text: ", err);
-      }
-    );
-  };
-
-  return (
-    <div className="w-full h-full flex flex-col bg-zinc-900 rounded-lg border-2 border-[#414344] overflow-hidden">
-      <div className="p-8 pb-4 flex-shrink-0">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-medium">Progress Update</h2>
-          <button
-            onClick={generateSummary}
-            disabled={isLoading}
-            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
-          >
-            {isLoading ? "Generating..." : "Generate Summary"}
-          </button>
-        </div>
-      </div>
-      <div className="flex-1 scrollbar-hide overflow-y-auto overflow-x-hidden p-8 pt-2">
-        <div className="flex flex-col gap-4">
-          {summary ? (
-            <>
-              <div className="whitespace-pre-line leading-[30px]">
-                {summary}
-              </div>
-              <div className="mt-4 flex justify-end">
-                <button
-                  onClick={copyToClipboard}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                >
-                  Copy
-                </button>
-              </div>
-            </>
-          ) : (
-            <div className="text-zinc-500">
-              <p>
-                Click 'Generate Summary' to create a progress update for <span className="font-medium text-zinc-400">{timeFilter}</span> that you can share with your team.
-              </p>
-              {updates.length === 0 && (
-                <p className="mt-4">
-                  No updates available for this time period.
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default ProgressUpdate;
-</file>
-
-<file path="forge.config.js">
-module.exports = {
-  packagerConfig: {
-    // Your packager options
-    asar: true,
-    // macOS specific options
-    darwinDarkModeSupport: true,
-    // icon: './path/to/your/icon.icns' // macOS icon needs .icns format
-  },
-  makers: [
-    {
-      name: '@electron-forge/maker-dmg',
-      config: {
-        // DMG customization options
-        format: 'ULFO', // Ultra-compressed
-        // icon: './path/to/your/icon.icns',
-        // background: './path/to/background.png', // Optional background image
-        contents: (opts) => {
-          return [
-            {
-              x: 448,
-              y: 344,
-              type: 'link',
-              path: '/Applications'
-            },
-            {
-              x: 192,
-              y: 344,
-              type: 'file',
-              path: opts.appPath
-            }
-          ];
-        }
-      }
-    }
-  ]
-};
-</file>
-
 <file path="backend/config/db.js">
 const mongoose = require('mongoose');
 
@@ -492,19 +191,6 @@ const screenshotSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('Screenshot', screenshotSchema);
-</file>
-
-<file path="backend/models/User.js">
-const mongoose = require('mongoose');
-
-const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  created_at: { type: Date, default: Date.now },
-  token: { type: String },
-});
-
-module.exports = mongoose.model('User', userSchema);
 </file>
 
 <file path="backend/routes/auth.js">
@@ -564,6 +250,114 @@ router.get('/me', async (req, res) => {
     res.status(401).json({ message: 'Invalid token' });
   }
 });
+</file>
+
+<file path="backend/routes/profile.js">
+// backend/routes/profile.js
+const express = require('express');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const User = require('../models/User');
+const auth = require('../middleware/auth');
+
+const router = express.Router();
+
+// Configure multer for profile image uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, '../uploads/profiles');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, `profile-${uniqueSuffix}${ext}`);
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif|webp/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    
+    if (extname && mimetype) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed!'));
+    }
+  }
+});
+
+// GET current user profile
+router.get('/', auth, async (req, res) => {
+  try {
+    // User is already attached to req by auth middleware
+    const user = req.user;
+    
+    // Return user profile data (excluding password)
+    res.json({
+      username: user.username,
+      displayName: user.displayName || user.username,
+      profileImage: user.profileImage,
+      created_at: user.created_at
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// UPDATE user profile
+router.put('/', auth, upload.single('profileImage'), async (req, res) => {
+  try {
+    const updates = {};
+    
+    // Update display name if provided
+    if (req.body.displayName) {
+      updates.displayName = req.body.displayName;
+    }
+    
+    // Update profile image if a file was uploaded
+    if (req.file) {
+      // Create URL for the uploaded image
+      const profileImageUrl = `/uploads/profiles/${req.file.filename}`;
+      updates.profileImage = profileImageUrl;
+      
+      // If user already had a profile image, delete the old one
+      if (req.user.profileImage) {
+        const oldImagePath = path.join(__dirname, '..', req.user.profileImage);
+        // Check if file exists before attempting to delete
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+        }
+      }
+    }
+    
+    // Update user in database
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      updates,
+      { new: true, runValidators: true }
+    ).select('-password');
+    
+    res.json({
+      username: updatedUser.username,
+      displayName: updatedUser.displayName || updatedUser.username,
+      profileImage: updatedUser.profileImage,
+      created_at: updatedUser.created_at
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+module.exports = router;
 </file>
 
 <file path="backend/temp/627aa30b102ff0d241d1bf7bc62b0825">
@@ -1131,41 +925,137 @@ const NewDocumentation = () => {
 export default NewDocumentation;
 </file>
 
-<file path="src/context/AuthContext.js">
-import React, { createContext, useState, useEffect } from "react";
+<file path="src/components/ProfileEditModal.js">
+import React, { useState, useRef } from "react";
+import { Dialog, DialogContent } from "./ui/dialog";
+import { X, Upload, Camera } from "lucide-react";
 
-const AuthContext = createContext();
+const ProfileEditModal = ({ isOpen, onClose, onSave, currentUser }) => {
+  const [displayName, setDisplayName] = useState(currentUser?.displayName || "");
+  const [profileImage, setProfileImage] = useState(currentUser?.profileImage || null);
+  const [previewUrl, setPreviewUrl] = useState(currentUser?.profileImage || null);
+  const fileInputRef = useRef(null);
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    // Load user session from localStorage
-    const storedUser = localStorage.getItem("username");
-    if (storedUser) {
-      setUser(storedUser);
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImage(file);
+        setPreviewUrl(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
-  }, []);
-
-  const login = (username) => {
-    setUser(username);
-    localStorage.setItem("username", username);
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem("username");
-    localStorage.removeItem("token");
+  const triggerFileInput = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleSave = () => {
+    onSave({
+      displayName,
+      profileImage,
+      previewUrl
+    });
+    onClose();
+  };
+
+  const handleCancel = () => {
+    // Reset form and close
+    setDisplayName(currentUser?.displayName || "");
+    setProfileImage(currentUser?.profileImage || null);
+    setPreviewUrl(currentUser?.profileImage || null);
+    onClose();
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
-      {children}
-    </AuthContext.Provider>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="bg-zinc-900 border border-zinc-800 w-full max-w-md">
+        <div className="p-6 space-y-6">
+          <div className="flex justify-between items-center">
+            <h3 className="text-xl font-semibold text-white">Edit Profile</h3>
+            <button
+              onClick={handleCancel}
+              className="p-2 rounded-full hover:bg-zinc-800 transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          {/* Profile Picture */}
+          <div className="flex flex-col items-center space-y-4">
+            <div className="relative">
+              <div className="w-24 h-24 rounded-full bg-zinc-800 overflow-hidden">
+                {previewUrl ? (
+                  <img 
+                    src={previewUrl} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-zinc-400">
+                    <Camera className="w-8 h-8" />
+                  </div>
+                )}
+              </div>
+              <button 
+                onClick={triggerFileInput}
+                className="absolute bottom-0 right-0 p-1.5 bg-emerald-500 rounded-full text-white hover:bg-emerald-600 transition-colors"
+              >
+                <Upload className="w-4 h-4" />
+              </button>
+              <input 
+                type="file" 
+                ref={fileInputRef}
+                onChange={handleImageChange}
+                accept="image/*"
+                className="hidden"
+              />
+            </div>
+            <p className="text-sm text-zinc-400">
+              Click the icon to upload a new profile picture
+            </p>
+          </div>
+
+          {/* Display Name */}
+          <div className="space-y-2">
+            <label htmlFor="displayName" className="block text-sm font-medium text-zinc-300">
+              Display Name
+            </label>
+            <input
+              type="text"
+              id="displayName"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              placeholder="Your display name"
+            />
+          </div>
+
+          {/* Save/Cancel Buttons */}
+          <div className="flex space-x-3 pt-4">
+            <button
+              onClick={handleCancel}
+              className="flex-1 px-4 py-2 bg-zinc-800 text-white rounded-md hover:bg-zinc-700 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              className="flex-1 px-4 py-2 bg-emerald-500 text-white rounded-md hover:bg-emerald-600 transition-colors"
+              disabled={!displayName.trim()}
+            >
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
-export default AuthContext;
+export default ProfileEditModal;
 </file>
 
 <file path="src/App.test.js">
@@ -1177,6 +1067,136 @@ test('renders learn react link', () => {
   const linkElement = screen.getByText(/learn react/i);
   expect(linkElement).toBeInTheDocument();
 });
+</file>
+
+<file path="src/ProgressUpdate.js">
+import React, { useState, useEffect, useRef } from "react";
+
+const ProgressUpdate = ({ updates, username, timeFilter, resetUpdate }) => {
+  const [summary, setSummary] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Use a ref to track if we should reset the summary
+  const shouldResetRef = useRef(false);
+  
+  // Only reset summary when resetUpdate changes from false to true
+  useEffect(() => {
+    if (resetUpdate) {
+      shouldResetRef.current = true;
+    }
+  }, [resetUpdate]);
+  
+  // Apply the reset when needed, but only once
+  useEffect(() => {
+    if (shouldResetRef.current) {
+      setSummary("");
+      shouldResetRef.current = false;
+    }
+  }, [timeFilter]);
+
+  const generateSummary = async () => {
+    setIsLoading(true);
+    
+    if (updates.length === 0) {
+      setSummary("No updates available for the selected time period.");
+      setIsLoading(false);
+      return;
+    }
+    
+    try {
+      console.log("Generating summary for updates:", updates);
+      const response = await fetch(
+        "http://localhost:5001/api/screenshots/generate-summary",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ progressUpdates: updates }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Network response was not ok");
+      const data = await response.json();
+      console.log("Summary response data:", data);
+      
+      // Store the raw summary directly without parsing or formatting
+      if (data && data.summary) {
+        setSummary(data.summary);
+        console.log("Setting summary to:", data.summary);
+      } else {
+        setSummary("No summary could be generated.");
+        console.warn("No summary data received from API");
+      }
+    } catch (error) {
+      console.error("Error generating summary:", error);
+      setSummary("Error generating summary. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Copy to clipboard function
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(summary).then(
+      () => {
+        alert("Summary copied to clipboard!");
+      },
+      (err) => {
+        console.error("Could not copy text: ", err);
+      }
+    );
+  };
+
+  return (
+    <div className="w-full h-full flex flex-col bg-zinc-900 rounded-lg border-2 border-[#414344] overflow-hidden">
+      <div className="p-8 pb-4 flex-shrink-0">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-medium">Progress Update</h2>
+          <button
+            onClick={generateSummary}
+            disabled={isLoading}
+            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+          >
+            {isLoading ? "Generating..." : "Generate Summary"}
+          </button>
+        </div>
+      </div>
+      <div className="flex-1 scrollbar-hide overflow-y-auto overflow-x-hidden p-8 pt-2">
+        <div className="flex flex-col gap-4">
+          {summary ? (
+            <>
+              <div className="whitespace-pre-line leading-[30px]">
+                {summary}
+              </div>
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={copyToClipboard}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                >
+                  Copy
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="text-zinc-500">
+              <p>
+                Click 'Generate Summary' to create a progress update for <span className="font-medium text-zinc-400">{timeFilter}</span> that you can share with your team.
+              </p>
+              {updates.length === 0 && (
+                <p className="mt-4">
+                  No updates available for this time period.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProgressUpdate;
 </file>
 
 <file path="src/ProjectDetails.js">
@@ -1478,6 +1498,45 @@ export default function TeamSelector() {
 }
 </file>
 
+<file path="forge.config.js">
+module.exports = {
+  packagerConfig: {
+    // Your packager options
+    asar: true,
+    // macOS specific options
+    darwinDarkModeSupport: true,
+    // icon: './path/to/your/icon.icns' // macOS icon needs .icns format
+  },
+  makers: [
+    {
+      name: '@electron-forge/maker-dmg',
+      config: {
+        // DMG customization options
+        format: 'ULFO', // Ultra-compressed
+        // icon: './path/to/your/icon.icns',
+        // background: './path/to/background.png', // Optional background image
+        contents: (opts) => {
+          return [
+            {
+              x: 448,
+              y: 344,
+              type: 'link',
+              path: '/Applications'
+            },
+            {
+              x: 192,
+              y: 344,
+              type: 'file',
+              path: opts.appPath
+            }
+          ];
+        }
+      }
+    }
+  ]
+};
+</file>
+
 <file path="postcss.config.js">
 module.exports = {
   plugins: {
@@ -1509,46 +1568,20 @@ contextBridge.exposeInMainWorld('electronAPI', {
 });
 </file>
 
-<file path="backend/app.js">
-const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
-const dotenv = require("dotenv");
-const bodyParser = require("body-parser");
-const path = require("path");
-const connectDB = require("./config/db");
-const authRoutes = require("./routes/auth");
-const screenshotRoutes = require("./routes/screenshots");
-const cors = require("cors");
+<file path="backend/models/User.js">
+// backend/models/User.js
+const mongoose = require('mongoose');
 
-dotenv.config();
-connectDB();
-
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
-
-// Middleware
-app.use(cors({ origin: "http://localhost:3000" })); // Allow requests from frontend
-app.use(bodyParser.json({ limit: "10mb" }));
-app.use(bodyParser.urlencoded({ extended: true, limit: "10mb" }));
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
-// Routes
-app.use("/api/auth", authRoutes);
-app.use(
-  "/api/screenshots",
-  (req, res, next) => {
-    req.io = io;
-    next();
-  },
-  screenshotRoutes
-);
-
-const PORT = process.env.PORT || 5001;
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+const userSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  displayName: { type: String },
+  profileImage: { type: String }, // Store path or URL to image
+  created_at: { type: Date, default: Date.now },
+  token: { type: String },
 });
+
+module.exports = mongoose.model('User', userSchema);
 </file>
 
 <file path="public/electron.js">
@@ -1673,77 +1706,87 @@ app.on("activate", () => {
 }
 </file>
 
-<file path="src/components/ProfilePicture.js">
-"use client";
+<file path="src/context/AuthContext.js">
+// src/context/AuthContext.js
+import React, { createContext, useState, useEffect } from "react";
+import { fetchUserProfile } from "../api";
 
-import React, { useContext } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
-import {
-  Circle,
-  CreditCard,
-  User,
-  Settings as SettingsIcon,
-} from "lucide-react";
-import pfpIcon from "../img/pfpIcon.svg";
-import AuthContext from "../context/AuthContext";
+const AuthContext = createContext();
 
-const ProfilePicture = () => {
-  const { logout } = useContext(AuthContext);
-  const navigate = useNavigate();
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
+  useEffect(() => {
+    // Load user session from localStorage
+    const storedUsername = localStorage.getItem("username");
+    const token = localStorage.getItem("token");
+    
+    if (storedUsername && token) {
+      setUser(storedUsername);
+      
+      // Fetch user profile data if logged in
+      fetchUserProfile()
+        .then(profileData => {
+          setProfile(profileData);
+        })
+        .catch(error => {
+          console.error("Error fetching profile:", error);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    } else {
+      setLoading(false);
+    }
+  }, []);
+
+  const login = (username) => {
+    setUser(username);
+    localStorage.setItem("username", username);
+    
+    // Fetch user profile on login
+    fetchUserProfile()
+      .then(profileData => {
+        setProfile(profileData);
+      })
+      .catch(error => {
+        console.error("Error fetching profile on login:", error);
+      });
   };
 
-  const options = [
-    { label: "Status", icon: <Circle className="w-4 h-4 text-green-500" /> },
-    { label: "Free Plan", icon: <CreditCard className="w-4 h-4" /> },
-    { label: "Personal Info", icon: <User className="w-4 h-4" /> },
-    { label: "Settings", icon: <SettingsIcon className="w-4 h-4" /> },
-  ];
+  const logout = () => {
+    setUser(null);
+    setProfile(null);
+    localStorage.removeItem("username");
+    localStorage.removeItem("token");
+  };
+
+  const updateProfile = (newProfileData) => {
+    setProfile(prev => ({
+      ...prev,
+      ...newProfileData
+    }));
+  };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button className="p-2 hover:bg-zinc-800/50 rounded-full transition-colors focus:outline-none">
-          <img src={pfpIcon} className="h-12 w-12" alt="Profile" />
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="end"
-        className="w-48 bg-zinc-800 rounded-lg shadow-lg overflow-hidden"
-      >
-        {options.map((option) => (
-          <DropdownMenuItem
-            key={option.label}
-            className="px-3 py-3 text-sm hover:bg-zinc-700 transition-colors cursor-pointer"
-          >
-            <div className="flex items-center gap-2">
-              {option.icon}
-              <span>{option.label}</span>
-            </div>
-          </DropdownMenuItem>
-        ))}
-        {/* Log Out Option */}
-        <DropdownMenuItem
-          onClick={handleLogout}
-          className="px-3 py-3 text-sm text-red-500 hover:bg-red-700/20 transition-colors cursor-pointer"
-        >
-          <span>Log Out</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <AuthContext.Provider 
+      value={{ 
+        user, 
+        profile, 
+        loading, 
+        login, 
+        logout, 
+        updateProfile 
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
   );
 };
 
-export default ProfilePicture;
+export default AuthContext;
 </file>
 
 <file path="src/pages/Login.js">
@@ -1902,57 +1945,6 @@ const Register = () => {
 };
 
 export default Register;
-</file>
-
-<file path="src/api.js">
-export const fetchScreenshots = async () => {
-  const response = await fetch("http://localhost:5001/api/screenshots", {
-    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch screenshots");
-  }
-
-  return response.json();
-};
-
-export const deleteScreenshot = async (fileId) => {
-  const token = localStorage.getItem("token");
-  const response = await fetch(`http://localhost:5001/api/screenshots/${fileId}`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!response.ok) {
-    throw new Error("Failed to delete screenshot");
-  }
-  return response.json();
-};
-
-export const sendScreenshot = async (screenshotPath) => {
-  const formData = new FormData();
-  const token = localStorage.getItem("token");
-
-  try {
-    const fileData = await window.electronAPI.fs.readFile(screenshotPath);
-    formData.append("screenshot", new Blob([fileData], { type: "image/jpeg" }));
-
-    const response = await fetch("http://localhost:5001/api/screenshots", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to save screenshot");
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error("Error processing screenshot:", error.message);
-    throw error;
-  }
-};
 </file>
 
 <file path="src/App.css">
@@ -2204,39 +2196,6 @@ export default function TimeFilterDropdown() {
 }
 </file>
 
-<file path=".gitignore">
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# env
-.env
-
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
-
-# testing
-/coverage
-
-# production
-/build
-
-# misc
-.DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-uploads/
-
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# tesseract
-*.traineddata
-</file>
-
 <file path="main.js">
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
@@ -2298,6 +2257,51 @@ module.exports = {
 };
 </file>
 
+<file path="backend/app.js">
+// backend/app.js
+const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
+const dotenv = require("dotenv");
+const bodyParser = require("body-parser");
+const path = require("path");
+const connectDB = require("./config/db");
+const authRoutes = require("./routes/auth");
+const screenshotRoutes = require("./routes/screenshots");
+const profileRoutes = require("./routes/profile"); // Add profile routes
+const cors = require("cors");
+
+dotenv.config();
+connectDB();
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
+
+// Middleware
+app.use(cors({ origin: "http://localhost:3000" })); // Allow requests from frontend
+app.use(bodyParser.json({ limit: "10mb" }));
+app.use(bodyParser.urlencoded({ extended: true, limit: "10mb" }));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// Routes
+app.use("/api/auth", authRoutes);
+app.use("/api/profile", profileRoutes); // Add profile routes
+app.use(
+  "/api/screenshots",
+  (req, res, next) => {
+    req.io = io;
+    next();
+  },
+  screenshotRoutes
+);
+
+const PORT = process.env.PORT || 5001;
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+</file>
+
 <file path="public/index.html">
 <!DOCTYPE html>
 <html lang="en">
@@ -2342,6 +2346,261 @@ module.exports = {
     -->
   </body>
 </html>
+</file>
+
+<file path="src/components/ProfilePicture.js">
+"use client";
+
+import React, { useContext, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import {
+  Circle,
+  CreditCard,
+  User,
+  Settings as SettingsIcon,
+} from "lucide-react";
+import pfpIcon from "../img/pfpIcon.svg";
+import AuthContext from "../context/AuthContext";
+import ProfileEditModal from "./ProfileEditModal";
+import { updateUserProfile } from "../api";
+
+const ProfilePicture = () => {
+  const { logout, profile, updateProfile } = useContext(AuthContext);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  const handleEditProfile = () => {
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveProfile = async (profileData) => {
+    try {
+      const updatedProfile = await updateUserProfile(profileData);
+      updateProfile(updatedProfile);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      alert("Failed to update profile. Please try again.");
+    }
+  };
+
+  const options = [
+    { label: "Status", icon: <Circle className="w-4 h-4 text-green-500" /> },
+    { label: "Free Plan", icon: <CreditCard className="w-4 h-4" /> },
+    { 
+      label: "Edit Profile", 
+      icon: <User className="w-4 h-4" />,
+      onClick: handleEditProfile 
+    },
+    { label: "Settings", icon: <SettingsIcon className="w-4 h-4" /> },
+  ];
+
+  // Determine profile image source
+  const profileImageSrc = profile?.profileImage 
+    ? `http://localhost:5001${profile.profileImage}` 
+    : pfpIcon;
+
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button className="p-2 hover:bg-zinc-800/50 rounded-full transition-colors focus:outline-none">
+            <img 
+              src={profileImageSrc} 
+              className="h-12 w-12 rounded-full object-cover"
+              alt="Profile" 
+            />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="end"
+          className="w-48 bg-zinc-800 rounded-lg shadow-lg overflow-hidden"
+        >
+          {/* User info section */}
+          <div className="px-3 py-3 border-b border-zinc-700">
+            <div className="font-medium text-sm text-white">
+              {profile?.displayName || profile?.username || "User"}
+            </div>
+            <div className="text-xs text-zinc-400">
+              {profile?.username || ""}
+            </div>
+          </div>
+
+          {/* Options */}
+          {options.map((option) => (
+            <DropdownMenuItem
+              key={option.label}
+              onClick={option.onClick}
+              className="px-3 py-3 text-sm hover:bg-zinc-700 transition-colors cursor-pointer"
+            >
+              <div className="flex items-center gap-2">
+                {option.icon}
+                <span>{option.label}</span>
+              </div>
+            </DropdownMenuItem>
+          ))}
+          
+          {/* Log Out Option */}
+          <DropdownMenuItem
+            onClick={handleLogout}
+            className="px-3 py-3 text-sm text-red-500 hover:bg-red-700/20 transition-colors cursor-pointer"
+          >
+            <span>Log Out</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      {/* Profile Edit Modal */}
+      <ProfileEditModal 
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSave={handleSaveProfile}
+        currentUser={profile}
+      />
+    </>
+  );
+};
+
+export default ProfilePicture;
+</file>
+
+<file path="src/api.js">
+// src/api.js
+export const fetchScreenshots = async () => {
+  const response = await fetch("http://localhost:5001/api/screenshots", {
+    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch screenshots");
+  }
+
+  return response.json();
+};
+
+export const deleteScreenshot = async (fileId) => {
+  const token = localStorage.getItem("token");
+  const response = await fetch(`http://localhost:5001/api/screenshots/${fileId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) {
+    throw new Error("Failed to delete screenshot");
+  }
+  return response.json();
+};
+
+export const sendScreenshot = async (screenshotPath) => {
+  const formData = new FormData();
+  const token = localStorage.getItem("token");
+
+  try {
+    const fileData = await window.electronAPI.fs.readFile(screenshotPath);
+    formData.append("screenshot", new Blob([fileData], { type: "image/jpeg" }));
+
+    const response = await fetch("http://localhost:5001/api/screenshots", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to save screenshot");
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Error processing screenshot:", error.message);
+    throw error;
+  }
+};
+
+// New profile API functions
+export const fetchUserProfile = async () => {
+  const token = localStorage.getItem("token");
+  const response = await fetch("http://localhost:5001/api/profile", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch user profile");
+  }
+
+  return response.json();
+};
+
+export const updateUserProfile = async (profileData) => {
+  const token = localStorage.getItem("token");
+  const formData = new FormData();
+  
+  // Add display name if provided
+  if (profileData.displayName) {
+    formData.append("displayName", profileData.displayName);
+  }
+  
+  // Add profile image if provided
+  if (profileData.profileImage && profileData.profileImage instanceof File) {
+    formData.append("profileImage", profileData.profileImage);
+  }
+  
+  const response = await fetch("http://localhost:5001/api/profile", {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to update profile");
+  }
+
+  return response.json();
+};
+</file>
+
+<file path=".gitignore">
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# env
+.env
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# production
+/build
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+uploads/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# tesseract
+*.traineddata
+
+dist/
+out/
 </file>
 
 <file path="src/components/StartButton.js">
@@ -2957,6 +3216,8 @@ router.get("/", auth, async (req, res) => {
         carouselText: file.metadata?.carouselText || "No description available",
         progressText: file.metadata?.progressText || "No description available",
         fileId: file._id,
+        // Include the timestamp (uploadDate from GridFS or use metadata.created_at if available)
+        timestamp: file.metadata?.created_at || file.uploadDate.toISOString(),
       }))
     );
   } catch (error) {
@@ -3050,12 +3311,13 @@ module.exports = router;
 </file>
 
 <file path="src/VisualProgressUpdate.js">
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Dialog, DialogContent } from "./components/ui/dialog";
 import { X, Trash2 } from "lucide-react";
+import AuthContext from "./context/AuthContext";
 
 export default function VisualProgressUpdate({
-  userName = "Daniel Gao",
+  userName,
   userAvatar = "/placeholder.svg?height=48&width=48",
   carouselText = "Bugs Resolved",
   screenshot = "/placeholder.svg?height=600&width=800",
@@ -3063,6 +3325,20 @@ export default function VisualProgressUpdate({
   onDelete,
 }) {
   const [isImageExpanded, setIsImageExpanded] = useState(false);
+  const { profile } = useContext(AuthContext);
+
+  // Determine if this update belongs to the current user
+  const isCurrentUser = profile && profile.username === userName;
+
+  // Use profile image if this is the current user and they have a custom profile image
+  const displayAvatar = isCurrentUser && profile.profileImage
+    ? `http://localhost:5001${profile.profileImage}`
+    : userAvatar;
+
+  // Use display name if this is the current user and they have a custom display name
+  const displayName = isCurrentUser && profile.displayName
+    ? profile.displayName
+    : userName;
 
   return (
     <>
@@ -3074,16 +3350,16 @@ export default function VisualProgressUpdate({
               {/* Profile Section */}
               <div className="flex flex-shrink-0">
                 <img
-                  src={userAvatar}
-                  alt={userName}
-                  className="w-12 h-12 rounded-full"
+                  src={displayAvatar}
+                  alt={displayName}
+                  className="w-12 h-12 rounded-full object-cover"
                 />
               </div>
 
               {/* Name and Description */}
               <div className="flex flex-col">
                 <span className="text-md font-medium text-white">
-                  {userName}
+                  {displayName}
                 </span>
                 <div className="flex items-center gap-2 mt-1">
                   <div className="bg-emerald-500/10 text-[8px] text-emerald-500 border-2 border-emerald-500 hover:bg-emerald-500/20 rounded-md py-0.75 px-1">
@@ -3148,11 +3424,11 @@ export default function VisualProgressUpdate({
             <div className="space-y-2">
               <div className="flex items-center gap-2 mt-2">
                 <img
-                  src={userAvatar}
-                  alt={userName}
-                  className="w-6 h-6 rounded-full"
+                  src={displayAvatar}
+                  alt={displayName}
+                  className="w-6 h-6 rounded-full object-cover"
                 />
-                <span className="text-sm text-zinc-400">{userName}</span>
+                <span className="text-sm text-zinc-400">{displayName}</span>
               </div>
             </div>
           </div>
@@ -3193,46 +3469,53 @@ import ellipse5 from "./img/ellipse5.svg";
 import ellipse6 from "./img/ellipse6.svg";
 import ProfilePicture from "./components/ProfilePicture";
 import TeamProgress from "./TeamProgress";
+import ProgressUpdate from "./ProgressUpdate";
 
 function App() {
-  const { user, logout } = useContext(AuthContext);
+  const { user, profile, loading } = useContext(AuthContext);
   const [updates, setUpdates] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [resetUpdate, setResetUpdate] = useState(false);
+  const [timeFilter, setTimeFilter] = useState("This Week");
 
   function areScreenshotArraysEqual(arr1, arr2) {
-  if (arr1.length !== arr2.length) return false;
-  for (let i = 0; i < arr1.length; i++) {
-    if (arr1[i].fileId !== arr2[i].fileId) return false;
-  }
-  return true;
-}
-
-const refreshScreenshots = async () => {
-  if (user) {
-    try {
-      const screenshots = await fetchScreenshots();
-      const newUpdates = screenshots
-        .map((screenshot) => ({
-          userName: screenshot.username,
-          userAvatar: dgaoPfp,
-          carouselText: screenshot.carouselText,
-          progressText: screenshot.progressText,
-          fileId: screenshot.fileId,
-          screenshot: `http://localhost:5001/api/screenshots/image/${screenshot.fileId}`,
-        }))
-        .reverse();
-
-      setUpdates(prevUpdates => {
-        if (areScreenshotArraysEqual(newUpdates, prevUpdates)) {
-          return prevUpdates; // No change, do not rerender
-        }
-        return newUpdates; // Only update if different
-      });
-    } catch (error) {
-      console.error("Error fetching screenshots:", error);
+    if (arr1.length !== arr2.length) return false;
+    for (let i = 0; i < arr1.length; i++) {
+      if (arr1[i].fileId !== arr2[i].fileId) return false;
     }
+    return true;
   }
-};  
+
+  const refreshScreenshots = async () => {
+    if (user) {
+      try {
+        const screenshots = await fetchScreenshots();
+        const newUpdates = screenshots
+          .map((screenshot) => ({
+            userName: screenshot.username,
+            userAvatar: profile?.profileImage 
+              ? `http://localhost:5001${profile.profileImage}` 
+              : dgaoPfp,
+            carouselText: screenshot.carouselText,
+            progressText: screenshot.progressText,
+            fileId: screenshot.fileId,
+            screenshot: `http://localhost:5001/api/screenshots/image/${screenshot.fileId}`,
+            // Include the timestamp from the screenshot data
+            timestamp: screenshot.timestamp || new Date().toISOString()
+          }))
+          .reverse();
+  
+        setUpdates(prevUpdates => {
+          if (areScreenshotArraysEqual(newUpdates, prevUpdates)) {
+            return prevUpdates; // No change, do not rerender
+          }
+          return newUpdates; // Only update if different
+        });
+      } catch (error) {
+        console.error("Error fetching screenshots:", error);
+      }
+    }
+  };
 
   const navItems = [
     {
@@ -3319,7 +3602,14 @@ const refreshScreenshots = async () => {
       stopPolling();
       document.removeEventListener("visibilitychange", handleVisibility);
     };
-  }, [user]);
+  }, [user, profile]);
+
+  const handleTimeFilterChange = (filter) => {
+    setTimeFilter(filter);
+    setResetUpdate(true);
+    // Reset after a short delay to allow other components to react
+    setTimeout(() => setResetUpdate(false), 100);
+  };
 
   // Delete handler
   const handleDeleteScreenshot = async (fileId) => {
@@ -3329,6 +3619,47 @@ const refreshScreenshots = async () => {
     } catch (error) {
       alert("Failed to delete screenshot");
     }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-black text-white">
+        <div className="text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  const YourProgress = ({ updates }) => {
+    // Sort updates by timestamp (newest first)
+    const sortedUpdates = [...updates].sort((a, b) => {
+      return new Date(b.timestamp || 0) - new Date(a.timestamp || 0);
+    });
+  
+    return (
+      <div className="w-full h-full flex flex-col bg-zinc-900 rounded-lg border-2 border-[#414344] overflow-hidden">
+        <div className="p-8 pb-4 flex-shrink-0">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-medium">Your Progress</h2>
+            <TimeFilterDropdown />
+          </div>
+        </div>
+        <div className="flex-1 scrollbar-hide overflow-y-auto overflow-x-hidden p-8 pt-2">
+          <div className="flex flex-col gap-4">
+            {sortedUpdates.length > 0 ? (
+              sortedUpdates.map((update, index) => (
+                <ProgressItem
+                  key={index}
+                  timestamp={update.timestamp || update.created_at || new Date().toISOString()}
+                  description={update.progressText}
+                />
+              ))
+            ) : (
+              <p className="text-zinc-500">No progress updates yet.</p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const HomePage = () => (
@@ -3344,25 +3675,7 @@ const refreshScreenshots = async () => {
       {/* Progress boxes section - more responsive height */}
       <div className="flex-[2] min-h-0 flex gap-4">
         <div className="flex-1 min-w-0">
-          <div className="w-full h-full flex flex-col bg-zinc-900 rounded-lg border-2 border-[#414344] overflow-hidden">
-            <div className="p-4 md:p-6 lg:p-8 pb-2 md:pb-3 lg:pb-4 flex-shrink-0">
-              <div className="flex justify-between items-center">
-                <h2 className="text-lg md:text-xl font-medium">Your Progress</h2>
-                <TimeFilterDropdown />
-              </div>
-            </div>
-            <div className="flex-1 scrollbar-hide overflow-y-auto overflow-x-hidden p-4 md:p-6 lg:p-8 pt-2">
-              <div className="flex flex-col gap-4 md:gap-6">
-                {updates.map((update, index) => (
-                  <ProgressItem
-                    key={index}
-                    date={new Date().toLocaleDateString()}
-                    description={update.progressText}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
+          <YourProgress updates={updates} />
         </div>
         <div className="flex-1 min-w-0">
           <TeamProgress updates={updates} />
@@ -3482,11 +3795,31 @@ const refreshScreenshots = async () => {
   );
 }
 
-function ProgressItem({ date, description }) {
+function ProgressItem({ timestamp, description }) {
+  // Format the timestamp to "12:23PM 4/16" format
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp) return "";
+    
+    const date = new Date(timestamp);
+    
+    // Format time (12:23PM)
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const formattedHours = hours % 12 || 12; // Convert to 12-hour format
+    const formattedMinutes = minutes.toString().padStart(2, '0');
+    
+    // Format date (4/16)
+    const month = date.getMonth() + 1; // getMonth() is zero-based
+    const day = date.getDate();
+    
+    return `${formattedHours}:${formattedMinutes}${ampm} ${month}/${day}`;
+  };
+
   return (
     <div className="flex items-start gap-4">
       <div className="px-3 py-1.5 bg-zinc-800 rounded-lg text-sm text-zinc-300 whitespace-nowrap">
-        {date}
+        {formatTimestamp(timestamp)}
       </div>
       <p className="text-base text-zinc-100 leading-relaxed">{description}</p>
     </div>
