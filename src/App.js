@@ -26,12 +26,15 @@ import ellipse4 from "./img/ellipse4.svg";
 import ellipse5 from "./img/ellipse5.svg";
 import ellipse6 from "./img/ellipse6.svg";
 import ProfilePicture from "./components/ProfilePicture";
-import TeamProgress from "./TeamProgress";
+import ProgressUpdate from "./ProgressUpdate";
 
 function App() {
   const { user, logout } = useContext(AuthContext);
   const [updates, setUpdates] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [timeFilter, setTimeFilter] = useState("Today");
+  // Track if the timeFilter has changed to reset progress update
+  const [resetProgressUpdate, setResetProgressUpdate] = useState(false);
 
   const refreshScreenshots = async () => {
     if (user) {
@@ -45,6 +48,7 @@ function App() {
               carouselText: screenshot.carouselText,
               progressText: screenshot.progressText,
               screenshot: `http://localhost:5001/api/screenshots/image/${screenshot.fileId}`,
+              timestamp: screenshot.created_at || new Date().toISOString()
             }))
             .reverse()
         );
@@ -53,6 +57,70 @@ function App() {
       }
     }
   };
+
+  // Handle time filter change
+  const handleTimeFilterChange = (newFilter) => {
+    setTimeFilter(newFilter);
+    // Set flag to reset progress update
+    setResetProgressUpdate(true);
+  };
+
+  // Filter updates based on selected time period
+  const getFilteredUpdates = () => {
+    if (!updates || !user) return [];
+    
+    const now = new Date();
+    const userUpdates = updates.filter(update => update.userName === "daniel");
+    
+    switch(timeFilter) {
+      case "Today":
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        return userUpdates.filter(update => new Date(update.timestamp) >= today);
+      case "This Week":
+        const lastWeek = new Date(now);
+        lastWeek.setDate(now.getDate() - 7);
+        return userUpdates.filter(update => new Date(update.timestamp) >= lastWeek);
+      case "This Month":
+        const lastMonth = new Date(now);
+        lastMonth.setMonth(now.getMonth() - 1);
+        return userUpdates.filter(update => new Date(update.timestamp) >= lastMonth);
+      default:
+        return userUpdates;
+    }
+  };
+
+  useEffect(() => {
+    const loadScreenshots = async () => {
+      if (user) {
+        try {
+          const screenshots = await fetchScreenshots();
+          setUpdates(
+            screenshots
+              .map((screenshot) => ({
+                userName: screenshot.username,
+                userAvatar: dgaoPfp,
+                carouselText: screenshot.carouselText,
+                progressText: screenshot.progressText,
+                screenshot: `http://localhost:5001/api/screenshots/image/${screenshot.fileId}`,
+                timestamp: screenshot.created_at || new Date().toISOString()
+              }))
+              .reverse()
+          );
+        } catch (error) {
+          console.error("Error fetching screenshots:", error);
+        }
+      }
+    };
+
+    // Initial load
+    loadScreenshots();
+
+    // Set up interval
+    const interval = setInterval(loadScreenshots, 5000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
+  }, [user]);
 
   const navItems = [
     {
@@ -101,73 +169,61 @@ function App() {
     },
   ];
 
-  useEffect(() => {
-    const loadScreenshots = async () => {
-      if (user) {
-        try {
-          const screenshots = await fetchScreenshots();
-          setUpdates(
-            screenshots
-              .map((screenshot) => ({
-                userName: screenshot.username,
-                userAvatar: dgaoPfp,
-                carouselText: screenshot.carouselText,
-                progressText: screenshot.progressText,
-                screenshot: `http://localhost:5001/api/screenshots/image/${screenshot.fileId}`,
-              }))
-              .reverse()
-          );
-        } catch (error) {
-          console.error("Error fetching screenshots:", error);
-        }
-      }
-    };
-
-    // Initial load
-    loadScreenshots();
-
-    // Set up interval
-    const interval = setInterval(loadScreenshots, 5000);
-
-    // Cleanup interval on component unmount
-    return () => clearInterval(interval);
-  }, [user]); // Include user in dependencies
-
-  const HomePage = () => (
-    <div className="w-full h-full flex flex-col overflow-hidden">
-      {/* Carousel section */}
-      <div className="flex-[2_2_0%] max-w-full overflow-hidden">
-        <ProgressUpdatesCarousel updates={updates} />
-      </div>
-      <div className="mt-2 flex-[2.6_2.6_0%] flex gap-4 min-h-0">
-        <div className="flex-1 min-w-0">
-          <div className="w-full h-full flex flex-col bg-zinc-900 rounded-lg border-2 border-[#414344] overflow-hidden">
-            <div className="p-8 pb-4 flex-shrink-0">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-medium">Your Progress</h2>
-                <TimeFilterDropdown />
-              </div>
-            </div>
-            <div className="flex-1 scrollbar-hide overflow-y-auto overflow-x-hidden p-8 pt-2">
-              <div className="flex flex-col gap-6">
-                {updates.map((update, index) => (
-                  <ProgressItem
-                    key={index}
-                    date={new Date().toLocaleDateString()}
-                    description={update.progressText}
+  const HomePage = () => {
+    // Reset the flag after rendering component
+    if (resetProgressUpdate) {
+      setTimeout(() => setResetProgressUpdate(false), 100);
+    }
+    
+    const filteredUpdates = getFilteredUpdates();
+    
+    return (
+      <div className="w-full h-full flex flex-col overflow-hidden">
+        {/* Carousel section */}
+        <div className="flex-[2_2_0%] max-w-full overflow-hidden">
+          <ProgressUpdatesCarousel updates={updates} />
+        </div>
+        <div className="mt-2 flex-[2.6_2.6_0%] flex gap-4 min-h-0">
+          <div className="flex-1 min-w-0">
+            <div className="w-full h-full flex flex-col bg-zinc-900 rounded-lg border-2 border-[#414344] overflow-hidden">
+              <div className="p-8 pb-4 flex-shrink-0">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-xl font-medium">Your Progress</h2>
+                  <TimeFilterDropdown 
+                    selectedFilter={timeFilter} 
+                    onTimeChange={handleTimeFilterChange} 
                   />
-                ))}
+                </div>
+              </div>
+              <div className="flex-1 scrollbar-hide overflow-y-auto overflow-x-hidden p-8 pt-2">
+                <div className="flex flex-col gap-6">
+                  {filteredUpdates.length > 0 ? (
+                    filteredUpdates.map((update, index) => (
+                      <ProgressItem
+                        key={index}
+                        timestamp={update.timestamp}
+                        description={update.progressText}
+                      />
+                    ))
+                  ) : (
+                    <p className="text-zinc-500">No updates available for this time period.</p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div className="flex-1 min-w-0">
-          {/* Set height to 100% instead of 50vh */}
-          <TeamProgress updates={updates} />
+          <div className="flex-1 min-w-0">
+            <ProgressUpdate 
+              updates={filteredUpdates} 
+              username={user} 
+              timeFilter={timeFilter}
+              resetUpdate={resetProgressUpdate}
+            />
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <Router>
@@ -280,11 +336,22 @@ function App() {
   );
 }
 
-function ProgressItem({ date, description }) {
+// Updated ProgressItem component that uses timestamps instead of dates
+function ProgressItem({ timestamp, description }) {
+  // Format timestamp to "12:23pm" format
+  const formatTime = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true 
+    });
+  };
+
   return (
     <div className="flex items-start gap-4">
       <div className="px-3 py-1.5 bg-zinc-800 rounded-lg text-sm text-zinc-300 whitespace-nowrap">
-        {date}
+        {formatTime(timestamp)}
       </div>
       <p className="text-base text-zinc-100 leading-relaxed">{description}</p>
     </div>
