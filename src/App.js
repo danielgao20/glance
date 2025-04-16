@@ -27,46 +27,51 @@ import ellipse5 from "./img/ellipse5.svg";
 import ellipse6 from "./img/ellipse6.svg";
 import ProfilePicture from "./components/ProfilePicture";
 import TeamProgress from "./TeamProgress";
+import ProgressUpdate from "./ProgressUpdate";
 
 function App() {
-  const { user, logout } = useContext(AuthContext);
+  const { user, profile, loading } = useContext(AuthContext);
   const [updates, setUpdates] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [resetUpdate, setResetUpdate] = useState(false);
+  const [timeFilter, setTimeFilter] = useState("This Week");
 
   function areScreenshotArraysEqual(arr1, arr2) {
-  if (arr1.length !== arr2.length) return false;
-  for (let i = 0; i < arr1.length; i++) {
-    if (arr1[i].fileId !== arr2[i].fileId) return false;
-  }
-  return true;
-}
-
-const refreshScreenshots = async () => {
-  if (user) {
-    try {
-      const screenshots = await fetchScreenshots();
-      const newUpdates = screenshots
-        .map((screenshot) => ({
-          userName: screenshot.username,
-          userAvatar: dgaoPfp,
-          carouselText: screenshot.carouselText,
-          progressText: screenshot.progressText,
-          fileId: screenshot.fileId,
-          screenshot: `http://localhost:5001/api/screenshots/image/${screenshot.fileId}`,
-        }))
-        .reverse();
-
-      setUpdates(prevUpdates => {
-        if (areScreenshotArraysEqual(newUpdates, prevUpdates)) {
-          return prevUpdates; // No change, do not rerender
-        }
-        return newUpdates; // Only update if different
-      });
-    } catch (error) {
-      console.error("Error fetching screenshots:", error);
+    if (arr1.length !== arr2.length) return false;
+    for (let i = 0; i < arr1.length; i++) {
+      if (arr1[i].fileId !== arr2[i].fileId) return false;
     }
+    return true;
   }
-};  
+
+  const refreshScreenshots = async () => {
+    if (user) {
+      try {
+        const screenshots = await fetchScreenshots();
+        const newUpdates = screenshots
+          .map((screenshot) => ({
+            userName: screenshot.username,
+            userAvatar: profile?.profileImage 
+              ? `http://localhost:5001${profile.profileImage}` 
+              : dgaoPfp,
+            carouselText: screenshot.carouselText,
+            progressText: screenshot.progressText,
+            fileId: screenshot.fileId,
+            screenshot: `http://localhost:5001/api/screenshots/image/${screenshot.fileId}`,
+          }))
+          .reverse();
+
+        setUpdates(prevUpdates => {
+          if (areScreenshotArraysEqual(newUpdates, prevUpdates)) {
+            return prevUpdates; // No change, do not rerender
+          }
+          return newUpdates; // Only update if different
+        });
+      } catch (error) {
+        console.error("Error fetching screenshots:", error);
+      }
+    }
+  };  
 
   const navItems = [
     {
@@ -153,7 +158,14 @@ const refreshScreenshots = async () => {
       stopPolling();
       document.removeEventListener("visibilitychange", handleVisibility);
     };
-  }, [user]);
+  }, [user, profile]);
+
+  const handleTimeFilterChange = (filter) => {
+    setTimeFilter(filter);
+    setResetUpdate(true);
+    // Reset after a short delay to allow other components to react
+    setTimeout(() => setResetUpdate(false), 100);
+  };
 
   // Delete handler
   const handleDeleteScreenshot = async (fileId) => {
@@ -164,6 +176,14 @@ const refreshScreenshots = async () => {
       alert("Failed to delete screenshot");
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-black text-white">
+        <div className="text-xl">Loading...</div>
+      </div>
+    );
+  }
 
   const HomePage = () => (
     <div className="w-full h-full flex flex-col overflow-hidden">
@@ -178,25 +198,12 @@ const refreshScreenshots = async () => {
       {/* Progress boxes section - more responsive height */}
       <div className="flex-[2] min-h-0 flex gap-4">
         <div className="flex-1 min-w-0">
-          <div className="w-full h-full flex flex-col bg-zinc-900 rounded-lg border-2 border-[#414344] overflow-hidden">
-            <div className="p-4 md:p-6 lg:p-8 pb-2 md:pb-3 lg:pb-4 flex-shrink-0">
-              <div className="flex justify-between items-center">
-                <h2 className="text-lg md:text-xl font-medium">Your Progress</h2>
-                <TimeFilterDropdown />
-              </div>
-            </div>
-            <div className="flex-1 scrollbar-hide overflow-y-auto overflow-x-hidden p-4 md:p-6 lg:p-8 pt-2">
-              <div className="flex flex-col gap-4 md:gap-6">
-                {updates.map((update, index) => (
-                  <ProgressItem
-                    key={index}
-                    date={new Date().toLocaleDateString()}
-                    description={update.progressText}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
+          <ProgressUpdate 
+            updates={updates} 
+            username={profile?.displayName || user} 
+            timeFilter={timeFilter}
+            resetUpdate={resetUpdate}
+          />
         </div>
         <div className="flex-1 min-w-0">
           <TeamProgress updates={updates} />
